@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizMaster Pro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --pri:#1565c0;--pri-dark:#0d47a1;--acc:#ff6f00;--acc2:#ffa000;
+  --bg:#0b1726;--card:#152236;--card2:#1a2e4a;--brd:#1e3a5f;
+  --txt:#dce8f5;--dim:#6b8fb5;--suc:#2e7d32;--err:#c62828;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+.screen{display:none;min-height:100vh;padding-bottom:24px}
+.screen.active{display:block}
+.hdr{background:linear-gradient(135deg,var(--pri-dark),var(--pri));padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.5)}
+.hdr h1{font-size:18px;font-weight:700}
+.hdr small{display:block;font-size:10px;color:#90caf9;letter-spacing:2px;text-transform:uppercase}
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--brd)}
+.tab{flex:1;padding:13px 8px;text-align:center;cursor:pointer;font-weight:600;font-size:13px;color:var(--dim);border-bottom:3px solid transparent;transition:.2s}
+.tab.active{color:var(--acc);border-bottom-color:var(--acc)}
+.card{background:var(--card);border-radius:12px;padding:18px;margin:12px 16px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.inp{width:100%;padding:12px 14px;background:#0b1726;border:1.5px solid var(--brd);border-radius:8px;color:var(--txt);font-size:15px;margin-bottom:12px;transition:.2s}
+.inp:focus{outline:none;border-color:var(--acc)}
+label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:.5px}
+.btn-pri{background:var(--pri);color:#fff}
+.btn-pri:hover{background:var(--pri-dark)}
+.btn-acc{background:var(--acc);color:#fff}
+.btn-acc:hover{background:var(--acc2)}
+.btn-out{background:transparent;color:var(--txt);border:2px solid var(--brd)}
+.btn-sm{padding:8px 16px;font-size:13px;border-radius:6px;display:inline-block;width:auto}
+.alert{padding:11px 14px;border-radius:8px;margin:4px 0 8px;font-size:14px;display:none}
+.alert.show{display:block}
+.al-err{background:rgba(198,40,40,.12);border:1px solid #f44336;color:#ef9a9a}
+.al-ok{background:rgba(46,125,50,.12);border:1px solid #4caf50;color:#a5d6a7}
+.al-inf{background:rgba(21,101,192,.15);border:1px solid var(--pri);color:#90caf9}
+.prog-bar{height:5px;background:var(--brd);margin:0 16px 16px;border-radius:3px}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--pri),var(--acc));border-radius:3px;transition:width .4s}
+.timer-wrap{text-align:center}
+.timer{font-size:26px;font-weight:800;color:var(--acc);letter-spacing:1px}
+.timer.warn{color:#f44336;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.q-num{font-size:12px;color:var(--dim);text-align:center;margin:4px 0 14px}
+.q-txt{font-size:16px;line-height:1.7;margin-bottom:18px;font-weight:500}
+.opt{padding:13px 14px;border:2px solid var(--brd);border-radius:9px;margin-bottom:9px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:12px;font-size:14px}
+.opt:hover{border-color:var(--pri);background:rgba(21,101,192,.08)}
+.opt.sel{border-color:var(--acc);background:rgba(255,111,0,.1)}
+.opt.cor{border-color:#4caf50;background:rgba(76,175,80,.12)}
+.opt.wrg{border-color:#f44336;background:rgba(244,67,54,.12)}
+.opt-lbl{min-width:28px;height:28px;border-radius:50%;background:var(--brd);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+.opt.sel .opt-lbl{background:var(--acc)}
+.opt.cor .opt-lbl{background:#4caf50}
+.opt.wrg .opt-lbl{background:#f44336}
+.res-hero{background:linear-gradient(135deg,var(--pri-dark),var(--card2));border-radius:12px;margin:14px 16px;padding:28px 20px;text-align:center}
+.sc-ring{width:116px;height:116px;border-radius:50%;margin:0 auto 16px;position:relative;display:flex;align-items:center;justify-content:center}
+.sc-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.sc-inner{position:relative;text-align:center}
+.sc-num{font-size:28px;font-weight:800;color:var(--acc)}
+.sc-den{font-size:12px;color:var(--dim)}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 16px}
+.stat{background:var(--card2);border-radius:9px;padding:14px;text-align:center}
+.stat-v{font-size:22px;font-weight:800;color:var(--acc)}
+.stat-l{font-size:11px;color:var(--dim);margin-top:3px}
+.lb-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--brd)}
+.lb-row:last-child{border:none}
+.rnk{min-width:30px;height:30px;border-radius:50%;background:var(--brd);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+.rnk.g{background:#f9a825;color:#000}
+.rnk.s{background:#90a4ae;color:#000}
+.rnk.b{background:#bf8650;color:#fff}
+.lb-name{flex:1;font-size:14px;font-weight:600}
+.lb-score{font-size:18px;font-weight:800;color:var(--acc);text-align:right}
+.lb-time{font-size:11px;color:var(--dim);text-align:right}
+.rev-item{padding:12px 0;border-bottom:1px solid var(--brd)}
+.rev-item:last-child{border:none}
+.rev-q{font-size:14px;margin-bottom:7px;font-weight:500}
+.no-test{text-align:center;padding:32px 20px}
+.no-test .ico{font-size:48px;margin-bottom:12px}
+.nav-row{display:flex;gap:10px;margin:12px 16px}
+.nav-row .btn{flex:1}
+.logout-btn{background:none;border:none;color:#ef9a9a;cursor:pointer;font-size:12px;padding:4px 8px}
+.hero-badge{display:inline-block;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;margin-top:8px}
+.hb-gold{background:rgba(249,168,37,.2);color:#f9a825;border:1px solid #f9a825}
+.hb-silver{background:rgba(144,164,174,.2);color:#90a4ae;border:1px solid #90a4ae}
+.hb-pass{background:rgba(76,175,80,.2);color:#4caf50;border:1px solid #4caf50}
+.hb-fail{background:rgba(244,67,54,.2);color:#f44336;border:1px solid #f44336}
+.spin{text-align:center;padding:40px;color:var(--dim)}
+.spin:after{content:'⟳';font-size:28px;display:block;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════ SCREEN: AUTH ════════════════════ -->
+<div id="authScreen" class="screen active">
+  <div class="hdr">
+    <div><small>ChemVeda Classes</small><h1>🏆 Free Pro Version- 2026-27</h1></div>
+    <span style="font-size:38px">📚</span>
+  </div>
+  <div style="background:linear-gradient(135deg,var(--pri-dark),var(--card));margin:16px;border-radius:12px;padding:20px;text-align:center">
+    <p style="color:#90caf9;font-size:14px;line-height:1.7">Daily Tests · Live Leaderboard<br>Track Your Progress</p>
+  </div>
+  <div class="tabs">
+    <div class="tab active" id="tabLogin" onclick="authTab('login')">Login</div>
+    <div class="tab" id="tabReg" onclick="authTab('reg')">Register</div>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="fLogin">
+    <div class="card">
+      <label>User Name</label>
+      <input class="inp" id="lgRoll" type="text" placeholder="User Name">
+      <label>Password</label>
+      <input class="inp" id="lgPass" type="password" placeholder="Your Password">
+      <div class="alert" id="lgAlert"></div>
+      <button class="btn btn-pri" onclick="doLogin()">Login →</button>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="fReg" style="display:none">
+    <div class="card">
+      <label>Full Name</label>
+      <input class="inp" id="rgName" type="text" placeholder="Your full name">
+      <label>User Name</label>
+      <input class="inp" id="rgRoll" type="text" placeholder="Choose your username">
+      <label>Password</label>
+      <input class="inp" id="rgPass" type="password" placeholder="Create a password">
+      <label>Your Class/ Category</label>
+      <input class="inp" id="rgClass" type="text" placeholder="e.g. Class 10 / SSC">
+      <div class="alert" id="rgAlert"></div>
+      <button class="btn btn-acc" onclick="doRegister()">Register →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ SCREEN: HOME ════════════════════ -->
+<div id="homeScreen" class="screen">
+  <div class="hdr">
+    <div><small>Student Portal</small><h1 id="hdrName">Welcome!</h1></div>
+    <button class="logout-btn" onclick="doLogout()">Logout</button>
+  </div>
+  <div class="tabs">
+    <div class="tab active" id="tabToday" onclick="homeTab('today')">Today's Test</div>
+    <div class="tab" id="tabLb" onclick="homeTab('lb')">🏆 Leaderboard</div>
+  </div>
+
+  <div id="hToday">
+    <div id="testCard" style="margin-top:4px"></div>
+  </div>
+
+  <div id="hLb" style="display:none">
+    <div id="lbData"></div>
+  </div>
+</div>
+
+<!-- ════════════════════ SCREEN: QUIZ ════════════════════ -->
+<div id="quizScreen" class="screen">
+  <div class="hdr">
+    <div><small id="qSubject">Quiz</small><h1 id="qTitle">Daily Test</h1></div>
+    <div class="timer-wrap"><div class="timer" id="timerEl">10:00</div></div>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:10%"></div></div>
+  <div class="card">
+    <div class="q-num" id="qNum">Question 1 of 10</div>
+    <div class="q-txt" id="qTxt">Loading...</div>
+    <div id="opts"></div>
+  </div>
+  <div class="nav-row">
+    <button class="btn btn-out" id="btnPrev" onclick="goQ(-1)">← Prev</button>
+    <button class="btn btn-pri" id="btnNext" onclick="goQ(1)">Next →</button>
+    <button class="btn btn-acc" id="btnSub" onclick="confirmSub()" style="display:none">Submit ✓</button>
+  </div>
+</div>
+
+<!-- ════════════════════ SCREEN: RESULT ════════════════════ -->
+<div id="resultScreen" class="screen">
+  <div class="hdr"><h1>Your Result 🎯</h1></div>
+
+  <div id="resHero"></div>
+
+  <div class="stats-grid">
+    <div class="stat"><div class="stat-v" id="rsC" style="color:#4caf50">-</div><div class="stat-l">✅ Correct</div></div>
+    <div class="stat"><div class="stat-v" id="rsW" style="color:#f44336">-</div><div class="stat-l">❌ Wrong</div></div>
+    <div class="stat"><div class="stat-v" id="rsRank" style="color:#f9a825">...</div><div class="stat-l">🏆 Rank</div></div>
+    <div class="stat"><div class="stat-v" id="rsTime">-</div><div class="stat-l">⏱ Time Taken</div></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom:16px;font-size:16px">📋 Answer Review</h3>
+    <div id="review"></div>
+  </div>
+
+  <div style="margin:16px">
+    <button class="btn btn-pri" onclick="backHome()">← Back to Home</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  ⚙️  CONFIGURATION  —  paste your Apps Script URL below
+// ══════════════════════════════════════════════════════════
+const API = 'https://script.google.com/macros/s/AKfycbz0xqMewdzm16Tvximv3HP5V2QXTLlLOrpUr9FUOZmPcsP-cssCdhrqFgwtHQxuVFYU/exec';
+// ══════════════════════════════════════════════════════════
+
+let student = null, test = null, curQ = 0, ans = [], timerInt = null, timeLeft = 0, tStart = null;
+
+// ── SESSION RESTORE (Fix: no re-login on refresh) ─────────
+window.addEventListener('load', () => {
+  try {
+    const saved = localStorage.getItem('qm_student');
+    if (saved) { student = JSON.parse(saved); loadHome(); return; }
+  } catch(e) {}
+  showS('authScreen');
+});
+
+// ── AUTH ──────────────────────────────────────────────────
+function authTab(t){
+  document.getElementById('tabLogin').classList.toggle('active',t==='login');
+  document.getElementById('tabReg').classList.toggle('active',t==='reg');
+  document.getElementById('fLogin').style.display=t==='login'?'block':'none';
+  document.getElementById('fReg').style.display=t==='reg'?'block':'none';
+}
+
+async function doLogin(){
+  const roll=v('lgRoll'), pass=v('lgPass');
+  if(!roll||!pass){return alert2('lgAlert','Fill all fields','err')}
+  alert2('lgAlert','Logging in...','inf');
+  try{
+    const r=await fetch(`${API}?action=loginStudent&rollNo=${enc(roll)}&password=${enc(pass)}`);
+    const d=await r.json();
+    if(d.success){
+      student=d.student;
+      localStorage.setItem('qm_student', JSON.stringify(student)); // save session
+      loadHome();
+    } else alert2('lgAlert',d.message||'Invalid credentials','err');
+  }catch(e){alert2('lgAlert','Connection failed. Check network.','err')}
+}
+
+async function doRegister(){
+  const name=v('rgName'),roll=v('rgRoll'),pass=v('rgPass'),cls=v('rgClass');
+  if(!name||!roll||!pass||!cls){return alert2('rgAlert','Fill all fields','err')}
+  alert2('rgAlert','Registering...','inf');
+  try{
+    const fd=new FormData();
+    fd.append('action','registerStudent');
+    fd.append('name',name);fd.append('rollNo',roll);
+    fd.append('password',pass);fd.append('class',cls);
+    await fetch(API,{method:'POST',body:fd,mode:'no-cors'});
+    alert2('rgAlert','✅ Registered! Please login.','ok');
+    setTimeout(()=>authTab('login'),1800);
+  }catch(e){alert2('rgAlert','Error. Try again.','err')}
+}
+
+function doLogout(){
+  student=null; test=null;
+  localStorage.removeItem('qm_student'); // clear session
+  showS('authScreen');
+}
+
+// ── HOME ──────────────────────────────────────────────────
+async function loadHome(){
+  document.getElementById('hdrName').textContent=`Hi, ${student.name.split(' ')[0]}! 👋`;
+  showS('homeScreen');
+  homeTab('today');
+}
+
+function homeTab(t){
+  document.getElementById('tabToday').classList.toggle('active',t==='today');
+  document.getElementById('tabLb').classList.toggle('active',t==='lb');
+  document.getElementById('hToday').style.display=t==='today'?'block':'none';
+  document.getElementById('hLb').style.display=t==='lb'?'block':'none';
+  if(t==='today') loadTodayTest();
+  if(t==='lb'&&test) loadLb(test.id);
+  if(t==='lb'&&!test) document.getElementById('lbData').innerHTML='<div class="card"><p style="color:var(--dim);text-align:center;padding:20px">No test loaded yet.</p></div>';
+}
+
+async function loadTodayTest(){
+  document.getElementById('testCard').innerHTML='<div class="spin"></div>';
+  try{
+    // Try all 3 date formats — fixes Google Sheets date mismatch
+    const fmts=todayFormats();
+    let d=null;
+    for(const fmt of [fmts.iso,fmts.dmy,fmts.mdy]){
+      const r=await fetch(`${API}?action=getTest&date=${enc(fmt)}`);
+      const res=await r.json();
+      if(res.success){d=res;break;}
+    }
+    if(d&&d.success){
+      test=d.test;
+      document.getElementById('testCard').innerHTML=`
+      <div class="card" style="background:linear-gradient(135deg,var(--pri-dark),var(--card2));border-left:4px solid var(--acc);margin-top:16px">
+        <div style="font-size:10px;color:#90caf9;letter-spacing:2px;margin-bottom:8px">TODAY'S TEST</div>
+        <h2 style="font-size:18px;margin-bottom:6px">${d.test.title}</h2>
+        <p style="color:#90caf9;font-size:13px;margin-bottom:16px">📘 ${d.test.subject} &nbsp;·&nbsp; ⏱ ${d.test.timer} min &nbsp;·&nbsp; ❓ ${d.test.questions.length} Questions</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--acc)">${d.test.questions.length}</div><div style="font-size:11px;color:#90caf9">Qs</div></div>
+          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--acc)">${d.test.timer}</div><div style="font-size:11px;color:#90caf9">Min</div></div>
+          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:#4caf50">LIVE</div><div style="font-size:11px;color:#90caf9">Status</div></div>
+        </div>
+        <button class="btn btn-acc" onclick="startQuiz()">▶ Start Test Now</button>
+      </div>`;
+    } else {
+      document.getElementById('testCard').innerHTML=`<div class="card"><div class="no-test"><div class="ico">📭</div><h3>No Test Today</h3><p style="color:var(--dim);font-size:14px;margin-top:8px">Admin will post today's test soon. Check back!</p></div></div>`;
+    }
+  }catch(e){document.getElementById('testCard').innerHTML=`<div class="card" style="color:#f44336">⚠️ Could not load test. Check your internet.</div>`}
+}
+
+async function loadLb(testId){
+  document.getElementById('lbData').innerHTML='<div class="spin"></div>';
+  try{
+    const r=await fetch(`${API}?action=getLeaderboard&testId=${enc(testId)}`);
+    const d=await r.json();
+    if(d.success&&d.leaderboard.length>0){
+      const rnkC=['g','s','b'];
+      document.getElementById('lbData').innerHTML=`<div class="card"><h3 style="margin-bottom:14px">🏆 Leaderboard — ${test.title}</h3>${d.leaderboard.map((s,i)=>`
+        <div class="lb-row" ${s.rollNo==student.rollNo?'style="background:rgba(255,111,0,.07);border-radius:8px;padding:11px 8px;margin:0 -8px"':''}>
+          <div class="rnk ${rnkC[i]||''}">${i+1}</div>
+          <div class="lb-name">${s.name}${s.rollNo==student.rollNo?' ⭐':''}</div>
+          <div><div class="lb-score">${s.score}/${s.total}</div><div class="lb-time">${fmtT(s.timeTaken)}</div></div>
+        </div>`).join('')}</div>`;
+    } else {
+      document.getElementById('lbData').innerHTML='<div class="card"><p style="text-align:center;color:var(--dim);padding:20px">No results yet. Be the first! 🚀</p></div>';
+    }
+  }catch(e){document.getElementById('lbData').innerHTML='<div class="card" style="color:#f44336">Could not load leaderboard.</div>'}
+}
+
+// ── QUIZ ──────────────────────────────────────────────────
+function startQuiz(){
+  if(!test) return;
+  curQ=0; ans=new Array(test.questions.length).fill(null);
+  timeLeft=test.timer*60; tStart=Date.now();
+  document.getElementById('qTitle').textContent=test.title;
+  document.getElementById('qSubject').textContent=test.subject.toUpperCase();
+  showS('quizScreen'); renderQ(); startTmr();
+}
+
+function renderQ(){
+  const q=test.questions[curQ], tot=test.questions.length;
+  document.getElementById('qNum').textContent=`Question ${curQ+1} of ${tot}`;
+  document.getElementById('qTxt').textContent=q.question;
+  document.getElementById('progFill').style.width=`${((curQ+1)/tot)*100}%`;
+  document.getElementById('opts').innerHTML=['A','B','C','D'].map((L,i)=>`
+    <div class="opt ${ans[curQ]===L?'sel':''}" onclick="pickOpt('${L}')">
+      <div class="opt-lbl">${L}</div><div>${q.options[i]}</div>
+    </div>`).join('');
+  const last=curQ===tot-1;
+  document.getElementById('btnPrev').style.display=curQ===0?'none':'block';
+  document.getElementById('btnNext').style.display=last?'none':'block';
+  document.getElementById('btnSub').style.display=last?'block':'none';
+}
+
+function pickOpt(L){ans[curQ]=L;renderQ()}
+function goQ(d){curQ=Math.max(0,Math.min(test.questions.length-1,curQ+d));renderQ()}
+
+function confirmSub(){
+  const left=ans.filter(a=>a===null).length;
+  if(confirm(left>0?`${left} question(s) unanswered. Submit anyway?`:'Submit your test now?')) submitQuiz();
+}
+
+function startTmr(){
+  clearInterval(timerInt); updTmr();
+  timerInt=setInterval(()=>{
+    timeLeft--;updTmr();
+    if(timeLeft<=0){clearInterval(timerInt);alert('⏰ Time Up! Auto-submitting...');submitQuiz();}
+  },1000);
+}
+
+function updTmr(){
+  const m=String(Math.floor(timeLeft/60)).padStart(2,'0'), s=String(timeLeft%60).padStart(2,'0');
+  const el=document.getElementById('timerEl');
+  el.textContent=`${m}:${s}`;
+  el.className='timer'+(timeLeft<=60?' warn':'');
+}
+
+async function submitQuiz(){
+  clearInterval(timerInt);
+  const taken=Math.floor((Date.now()-tStart)/1000);
+  let score=0;
+  test.questions.forEach((q,i)=>{if(ans[i]===q.correct)score++;});
+  const tot=test.questions.length, pct=Math.round(score/tot*100);
+
+  // Save to Sheets (fire-and-forget)
+  try{
+    const fd=new FormData();
+    fd.append('action','submitResult');fd.append('rollNo',student.rollNo);
+    fd.append('studentName',student.name);fd.append('testId',test.id);
+    fd.append('score',score);fd.append('total',tot);fd.append('percentage',pct);fd.append('timeTaken',taken);
+    fetch(API,{method:'POST',body:fd,mode:'no-cors'});
+  }catch(e){}
+
+  showResult(score,tot,taken);
+}
+
+async function showResult(score,tot,taken){
+  const pct=Math.round(score/tot*100);
+  let grade,hbC,emoji;
+  if(pct>=80){grade='Excellent!';hbC='hb-gold';emoji='🥇';}
+  else if(pct>=60){grade='Good Job!';hbC='hb-silver';emoji='🥈';}
+  else if(pct>=40){grade='Keep Trying!';hbC='hb-pass';emoji='👍';}
+  else{grade='Practice More';hbC='hb-fail';emoji='📖';}
+
+  const r=358, circ=2*Math.PI*r/2;
+  const dash=circ*(pct/100);
+  document.getElementById('resHero').innerHTML=`
+    <div class="res-hero">
+      <div class="sc-ring">
+        <svg width="116" height="116" viewBox="0 0 116 116">
+          <circle cx="58" cy="58" r="50" fill="none" stroke="var(--brd)" stroke-width="10"/>
+          <circle cx="58" cy="58" r="50" fill="none" stroke="var(--acc)" stroke-width="10"
+            stroke-dasharray="${2*Math.PI*50*pct/100} ${2*Math.PI*50}" stroke-linecap="round"/>
+        </svg>
+        <div class="sc-inner"><div class="sc-num">${score}</div><div class="sc-den">/ ${tot}</div></div>
+      </div>
+      <h2 style="font-size:20px;margin-bottom:6px">${emoji} ${grade}</h2>
+      <div style="font-size:26px;font-weight:800;color:var(--acc)">${pct}%</div>
+      <div class="hero-badge ${hbC}">${student.name}</div>
+    </div>`;
+
+  document.getElementById('rsC').textContent=score;
+  document.getElementById('rsW').textContent=tot-score;
+  document.getElementById('rsTime').textContent=fmtT(taken);
+  document.getElementById('rsRank').textContent='...';
+
+  // Get rank (after delay to let sheet write)
+  setTimeout(async()=>{
+    try{
+      const r=await fetch(`${API}?action=getLeaderboard&testId=${enc(test.id)}`);
+      const d=await r.json();
+      if(d.success){
+        const pos=d.leaderboard.findIndex(s=>String(s.rollNo)===String(student.rollNo));
+        document.getElementById('rsRank').textContent=pos>=0?`#${pos+1}`:'#-';
+      }
+    }catch(e){}
+  },3000);
+
+  // Review
+  document.getElementById('review').innerHTML=test.questions.map((q,i)=>{
+    const ua=ans[i], cor=q.correct, ok=ua===cor;
+    const lbls=['A','B','C','D'];
+    return `<div class="rev-item">
+      <div style="font-size:11px;color:var(--dim);margin-bottom:5px">Q${i+1}</div>
+      <div class="rev-q">${q.question}</div>
+      <div style="font-size:13px;color:${ok?'#4caf50':'#f44336'}">${ok?'✅':'❌'} Your answer: ${ua?`${ua}. ${q.options[lbls.indexOf(ua)]}`:'Not answered'}</div>
+      ${!ok?`<div style="font-size:13px;color:#4caf50;margin-top:4px">✅ Correct: ${cor}. ${q.options[lbls.indexOf(cor)]}</div>`:''}
+    </div>`;
+  }).join('');
+
+  showS('resultScreen');
+}
+
+function backHome(){showS('homeScreen');homeTab('today')}
+
+// ── UTILS ─────────────────────────────────────────────────
+function v(id){return document.getElementById(id).value.trim()}
+function enc(s){return encodeURIComponent(s)}
+function showS(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function alert2(id,msg,type){const el=document.getElementById(id);el.className=`alert show al-${type}`;el.textContent=msg}
+function fmtT(s){return`${Math.floor(s/60)}m ${s%60}s`}
+// Returns all 3 date formats — handles Google Sheets date storage variations
+function todayFormats(){
+  const d=new Date();
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
+  return{iso:`${y}-${m}-${dd}`,dmy:`${dd}/${m}/${y}`,mdy:`${m}/${dd}/${y}`};
+}
+function today(){return todayFormats().iso;}
+</script>
+</body>
+</html>
