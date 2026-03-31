@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QuizMaster Pro</title>
+<title>ChemVeda</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -12,13 +12,13 @@
   --txt:#dce8f5;--dim:#6b8fb5;--suc:#2e7d32;--err:#c62828;
 }
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
-.screen{display:none;min-height:100vh;padding-bottom:24px}
+.screen{display:none;min-height:100vh;padding-bottom:32px}
 .screen.active{display:block}
 .hdr{background:linear-gradient(135deg,var(--pri-dark),var(--pri));padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.5)}
 .hdr h1{font-size:18px;font-weight:700}
 .hdr small{display:block;font-size:10px;color:#90caf9;letter-spacing:2px;text-transform:uppercase}
 .tabs{display:flex;background:var(--card);border-bottom:1px solid var(--brd)}
-.tab{flex:1;padding:13px 8px;text-align:center;cursor:pointer;font-weight:600;font-size:13px;color:var(--dim);border-bottom:3px solid transparent;transition:.2s}
+.tab{flex:1;padding:11px 4px;text-align:center;cursor:pointer;font-weight:600;font-size:12px;color:var(--dim);border-bottom:3px solid transparent;transition:.2s;white-space:nowrap}
 .tab.active{color:var(--acc);border-bottom-color:var(--acc)}
 .card{background:var(--card);border-radius:12px;padding:18px;margin:12px 16px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
 .inp{width:100%;padding:12px 14px;background:#0b1726;border:1.5px solid var(--brd);border-radius:8px;color:var(--txt);font-size:15px;margin-bottom:12px;transition:.2s}
@@ -31,6 +31,7 @@ label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
 .btn-acc:hover{background:var(--acc2)}
 .btn-out{background:transparent;color:var(--txt);border:2px solid var(--brd)}
 .btn-sm{padding:8px 16px;font-size:13px;border-radius:6px;display:inline-block;width:auto}
+.btn-done{background:rgba(46,125,50,.15);color:#4caf50;border:1.5px solid #4caf50;cursor:default}
 .alert{padding:11px 14px;border-radius:8px;margin:4px 0 8px;font-size:14px;display:none}
 .alert.show{display:block}
 .al-err{background:rgba(198,40,40,.12);border:1px solid #f44336;color:#ef9a9a}
@@ -88,6 +89,27 @@ label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
 .spin{text-align:center;padding:40px;color:var(--dim)}
 .spin:after{content:'⟳';font-size:28px;display:block;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+/* Old tests list */
+.old-test-item{background:var(--card2);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1.5px solid var(--brd);transition:.2s}
+.old-test-item:hover{border-color:var(--pri)}
+.old-test-item.done{border-color:rgba(76,175,80,.4)}
+.oti-icon{font-size:28px;flex-shrink:0}
+.oti-info{flex:1}
+.oti-title{font-size:14px;font-weight:700}
+.oti-sub{font-size:11px;color:var(--dim);margin-top:3px}
+.oti-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0}
+.oti-done{background:rgba(76,175,80,.15);color:#4caf50;border:1px solid #4caf50}
+.oti-new{background:rgba(255,111,0,.15);color:var(--acc);border:1px solid var(--acc)}
+/* LB section selector */
+.lb-sel{display:flex;gap:8px;margin:12px 16px 0;flex-wrap:wrap}
+.lb-sel-btn{padding:7px 14px;border-radius:20px;border:1.5px solid var(--brd);background:var(--card2);color:var(--dim);font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.lb-sel-btn.active{border-color:var(--acc);color:var(--acc);background:rgba(255,111,0,.08)}
+/* Resume banner */
+.resume-banner{background:linear-gradient(135deg,rgba(255,111,0,.15),rgba(255,160,0,.1));border:1.5px solid var(--acc);border-radius:10px;padding:14px 16px;margin:14px 16px 0;display:flex;align-items:center;gap:12px}
+.rb-icon{font-size:28px;flex-shrink:0}
+.rb-info{flex:1}
+.rb-title{font-size:14px;font-weight:700;color:var(--acc)}
+.rb-sub{font-size:12px;color:var(--dim);margin-top:2px}
 </style>
 </head>
 <body>
@@ -105,20 +127,16 @@ label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
     <div class="tab active" id="tabLogin" onclick="authTab('login')">Login</div>
     <div class="tab" id="tabReg" onclick="authTab('reg')">Register</div>
   </div>
-
-  <!-- LOGIN -->
   <div id="fLogin">
     <div class="card">
       <label>User Name</label>
       <input class="inp" id="lgRoll" type="text" placeholder="User Name">
       <label>Password</label>
-      <input class="inp" id="lgPass" type="password" placeholder="Your Password">
+      <input class="inp" id="lgPass" type="password" placeholder="Your Password" onkeydown="if(event.key==='Enter')doLogin()">
       <div class="alert" id="lgAlert"></div>
       <button class="btn btn-pri" onclick="doLogin()">Login →</button>
     </div>
   </div>
-
-  <!-- REGISTER -->
   <div id="fReg" style="display:none">
     <div class="card">
       <label>Full Name</label>
@@ -127,7 +145,7 @@ label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
       <input class="inp" id="rgRoll" type="text" placeholder="Choose your username">
       <label>Password</label>
       <input class="inp" id="rgPass" type="password" placeholder="Create a password">
-      <label>Your Class/ Category</label>
+      <label>Your Class / Category</label>
       <input class="inp" id="rgClass" type="text" placeholder="e.g. Class 10 / SSC">
       <div class="alert" id="rgAlert"></div>
       <button class="btn btn-acc" onclick="doRegister()">Register →</button>
@@ -142,15 +160,34 @@ label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
     <button class="logout-btn" onclick="doLogout()">Logout</button>
   </div>
   <div class="tabs">
-    <div class="tab active" id="tabToday" onclick="homeTab('today')">Today's Test</div>
-    <div class="tab" id="tabLb" onclick="homeTab('lb')">🏆 Leaderboard</div>
+    <div class="tab active" id="tabToday" onclick="homeTab('today')">📅 Today</div>
+    <div class="tab" id="tabOld"   onclick="homeTab('old')">📂 Old Tests</div>
+    <div class="tab" id="tabLb"    onclick="homeTab('lb')">🏆 Leaderboard</div>
   </div>
 
+  <!-- TAB: TODAY -->
   <div id="hToday">
+    <div id="resumeBanner" style="display:none">
+      <div class="resume-banner">
+        <div class="rb-icon">⏳</div>
+        <div class="rb-info">
+          <div class="rb-title">Test In Progress!</div>
+          <div class="rb-sub" id="resumeSubtitle">You have an ongoing test</div>
+        </div>
+        <button class="btn btn-acc btn-sm" onclick="resumeQuiz()">Resume →</button>
+      </div>
+    </div>
     <div id="testCard" style="margin-top:4px"></div>
   </div>
 
+  <!-- TAB: OLD TESTS -->
+  <div id="hOld" style="display:none">
+    <div id="oldTestsData"></div>
+  </div>
+
+  <!-- TAB: LEADERBOARD -->
   <div id="hLb" style="display:none">
+    <div class="lb-sel" id="lbSelector"></div>
     <div id="lbData"></div>
   </div>
 </div>
@@ -177,21 +214,17 @@ label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
 <!-- ════════════════════ SCREEN: RESULT ════════════════════ -->
 <div id="resultScreen" class="screen">
   <div class="hdr"><h1>Your Result 🎯</h1></div>
-
   <div id="resHero"></div>
-
   <div class="stats-grid">
     <div class="stat"><div class="stat-v" id="rsC" style="color:#4caf50">-</div><div class="stat-l">✅ Correct</div></div>
     <div class="stat"><div class="stat-v" id="rsW" style="color:#f44336">-</div><div class="stat-l">❌ Wrong</div></div>
     <div class="stat"><div class="stat-v" id="rsRank" style="color:#f9a825">...</div><div class="stat-l">🏆 Rank</div></div>
     <div class="stat"><div class="stat-v" id="rsTime">-</div><div class="stat-l">⏱ Time Taken</div></div>
   </div>
-
   <div class="card">
     <h3 style="margin-bottom:16px;font-size:16px">📋 Answer Review</h3>
     <div id="review"></div>
   </div>
-
   <div style="margin:16px">
     <button class="btn btn-pri" onclick="backHome()">← Back to Home</button>
   </div>
@@ -199,96 +232,156 @@ label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
 
 <script>
 // ══════════════════════════════════════════════════════════
-//  ⚙️  CONFIGURATION  —  paste your Apps Script URL below
-// ══════════════════════════════════════════════════════════
-const API = 'https://script.google.com/macros/s/AKfycbz0xqMewdzm16Tvximv3HP5V2QXTLlLOrpUr9FUOZmPcsP-cssCdhrqFgwtHQxuVFYU/exec';
+const API = 'https://script.google.com/macros/s/AKfycbyQMeFD3nYd4W-VOQ4CPeePUoxlDum_v4xxUfY8tguRqLpQ1A3ppF0m1BGL0ZZslIyA/exec';
 // ══════════════════════════════════════════════════════════
 
+// ── STATE ─────────────────────────────────────────────────
 let student = null, test = null, curQ = 0, ans = [], timerInt = null, timeLeft = 0, tStart = null;
+// Stores all fetched leaderboard tests for LB tab
+let lbTests = [], activeLbTestId = null;
 
-// ── SESSION RESTORE (Fix: no re-login on refresh) ─────────
+// ── QUIZ STATE KEYS (localStorage) ────────────────────────
+const LS_STUDENT   = 'qm_student';
+const LS_QUIZ_STATE = 'qm_quiz_state';   // ongoing quiz state
+const LS_SUBMITTED  = 'qm_submitted';    // set of submitted testIds
+
+// ── SESSION RESTORE ────────────────────────────────────────
 window.addEventListener('load', () => {
   try {
-    const saved = localStorage.getItem('qm_student');
-    if (saved) { student = JSON.parse(saved); loadHome(); return; }
-  } catch(e) {}
+    const saved = localStorage.getItem(LS_STUDENT);
+    if (saved) { student = JSON.parse(saved); restoreOrHome(); return; }
+  } catch(e){}
   showS('authScreen');
 });
+
+function restoreOrHome(){
+  // Check if there's an in-progress quiz to resume
+  try{
+    const qs = JSON.parse(localStorage.getItem(LS_QUIZ_STATE)||'null');
+    if(qs && qs.rollNo === student.rollNo){
+      // Restore quiz state silently, go to home — show resume banner
+      test = qs.test; ans = qs.ans; curQ = qs.curQ;
+      tStart = Date.now() - (qs.elapsed * 1000);
+      timeLeft = qs.timeLeft;
+      loadHome(true);
+      return;
+    }
+  }catch(e){}
+  loadHome(false);
+}
 
 // ── AUTH ──────────────────────────────────────────────────
 function authTab(t){
   document.getElementById('tabLogin').classList.toggle('active',t==='login');
   document.getElementById('tabReg').classList.toggle('active',t==='reg');
-  document.getElementById('fLogin').style.display=t==='login'?'block':'none';
-  document.getElementById('fReg').style.display=t==='reg'?'block':'none';
+  document.getElementById('fLogin').style.display = t==='login'?'block':'none';
+  document.getElementById('fReg').style.display   = t==='reg'?'block':'none';
 }
 
 async function doLogin(){
   const roll=v('lgRoll'), pass=v('lgPass');
-  if(!roll||!pass){return alert2('lgAlert','Fill all fields','err')}
+  if(!roll||!pass) return alert2('lgAlert','Fill all fields','err');
   alert2('lgAlert','Logging in...','inf');
   try{
-    const r=await fetch(`${API}?action=loginStudent&rollNo=${enc(roll)}&password=${enc(pass)}`);
-    const d=await r.json();
+    const r = await fetch(`${API}?action=loginStudent&rollNo=${enc(roll)}&password=${enc(pass)}`);
+    const d = await r.json();
     if(d.success){
-      student=d.student;
-      localStorage.setItem('qm_student', JSON.stringify(student)); // save session
-      loadHome();
-    } else alert2('lgAlert',d.message||'Invalid credentials','err');
-  }catch(e){alert2('lgAlert','Connection failed. Check network.','err')}
+      student = d.student;
+      localStorage.setItem(LS_STUDENT, JSON.stringify(student));
+      restoreOrHome();
+    } else alert2('lgAlert', d.message||'Invalid credentials','err');
+  }catch(e){ alert2('lgAlert','Connection failed. Check network.','err') }
 }
 
 async function doRegister(){
   const name=v('rgName'),roll=v('rgRoll'),pass=v('rgPass'),cls=v('rgClass');
-  if(!name||!roll||!pass||!cls){return alert2('rgAlert','Fill all fields','err')}
+  if(!name||!roll||!pass||!cls) return alert2('rgAlert','Fill all fields','err');
   alert2('rgAlert','Registering...','inf');
   try{
     const fd=new FormData();
-    fd.append('action','registerStudent');
-    fd.append('name',name);fd.append('rollNo',roll);
-    fd.append('password',pass);fd.append('class',cls);
+    fd.append('action','registerStudent'); fd.append('name',name);
+    fd.append('rollNo',roll); fd.append('password',pass); fd.append('class',cls);
     await fetch(API,{method:'POST',body:fd,mode:'no-cors'});
     alert2('rgAlert','✅ Registered! Please login.','ok');
     setTimeout(()=>authTab('login'),1800);
-  }catch(e){alert2('rgAlert','Error. Try again.','err')}
+  }catch(e){ alert2('rgAlert','Error. Try again.','err') }
 }
 
 function doLogout(){
+  clearInterval(timerInt);
   student=null; test=null;
-  localStorage.removeItem('qm_student'); // clear session
+  localStorage.removeItem(LS_STUDENT);
+  localStorage.removeItem(LS_QUIZ_STATE);
   showS('authScreen');
 }
 
 // ── HOME ──────────────────────────────────────────────────
-async function loadHome(){
+async function loadHome(hasResume=false){
   document.getElementById('hdrName').textContent=`Hi, ${student.name.split(' ')[0]}! 👋`;
   showS('homeScreen');
-  homeTab('today');
+  homeTab('today', hasResume);
 }
 
-function homeTab(t){
-  document.getElementById('tabToday').classList.toggle('active',t==='today');
-  document.getElementById('tabLb').classList.toggle('active',t==='lb');
-  document.getElementById('hToday').style.display=t==='today'?'block':'none';
-  document.getElementById('hLb').style.display=t==='lb'?'block':'none';
-  if(t==='today') loadTodayTest();
-  if(t==='lb'&&test) loadLb(test.id);
-  if(t==='lb'&&!test) document.getElementById('lbData').innerHTML='<div class="card"><p style="color:var(--dim);text-align:center;padding:20px">No test loaded yet.</p></div>';
+function homeTab(t, hasResume=false){
+  ['today','old','lb'].forEach(x=>{
+    const tid = x==='today'?'tabToday':x==='old'?'tabOld':'tabLb';
+    document.getElementById(tid).classList.toggle('active', x===t);
+    const pid = x==='today'?'hToday':x==='old'?'hOld':'hLb';
+    document.getElementById(pid).style.display = x===t?'block':'none';
+  });
+  if(t==='today') loadTodayTab(hasResume);
+  if(t==='old')   loadOldTests();
+  if(t==='lb')    loadLbTab();
 }
 
-async function loadTodayTest(){
+// ── TODAY TAB ─────────────────────────────────────────────
+function hasSubmitted(testId){ 
+  try{ return JSON.parse(localStorage.getItem(LS_SUBMITTED)||'[]').includes(String(testId)); }
+  catch(e){ return false; }
+}
+function markSubmitted(testId){
+  try{
+    const arr = JSON.parse(localStorage.getItem(LS_SUBMITTED)||'[]');
+    if(!arr.includes(String(testId))) arr.push(String(testId));
+    localStorage.setItem(LS_SUBMITTED, JSON.stringify(arr));
+  }catch(e){}
+}
+
+async function loadTodayTab(hasResume=false){
+  // Show / hide resume banner
+  const banner = document.getElementById('resumeBanner');
+  if(hasResume && test){
+    document.getElementById('resumeSubtitle').textContent = `${test.title} — ${fmtT(timeLeft)} remaining`;
+    banner.style.display='block';
+  } else {
+    banner.style.display='none';
+  }
+
   document.getElementById('testCard').innerHTML='<div class="spin"></div>';
   try{
-    // Try all 3 date formats — fixes Google Sheets date mismatch
-    const fmts=todayFormats();
-    let d=null;
+    const fmts=todayFormats(); let d=null;
     for(const fmt of [fmts.iso,fmts.dmy,fmts.mdy]){
       const r=await fetch(`${API}?action=getTest&date=${enc(fmt)}`);
       const res=await r.json();
       if(res.success){d=res;break;}
     }
     if(d&&d.success){
-      test=d.test;
+      // If this is a new test (not in-progress one), update test variable
+      if(!hasResume) test=d.test;
+
+      const submitted = hasSubmitted(d.test.id);
+      const inProgress = hasResume && test && test.id===d.test.id;
+
+      let actionBtn = '';
+      if(submitted){
+        actionBtn=`<button class="btn btn-done" disabled>✅ Already Submitted</button>
+          <button class="btn btn-pri" style="margin-top:8px" onclick="viewMyResult('${d.test.id}')">View My Result →</button>`;
+      } else if(inProgress){
+        actionBtn=`<button class="btn btn-acc" onclick="resumeQuiz()">⏳ Resume Test →</button>`;
+      } else {
+        actionBtn=`<button class="btn btn-acc" onclick="startQuiz()">▶ Start Test Now</button>`;
+      }
+
       document.getElementById('testCard').innerHTML=`
       <div class="card" style="background:linear-gradient(135deg,var(--pri-dark),var(--card2));border-left:4px solid var(--acc);margin-top:16px">
         <div style="font-size:10px;color:#90caf9;letter-spacing:2px;margin-bottom:8px">TODAY'S TEST</div>
@@ -297,14 +390,114 @@ async function loadTodayTest(){
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
           <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--acc)">${d.test.questions.length}</div><div style="font-size:11px;color:#90caf9">Qs</div></div>
           <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--acc)">${d.test.timer}</div><div style="font-size:11px;color:#90caf9">Min</div></div>
-          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:#4caf50">LIVE</div><div style="font-size:11px;color:#90caf9">Status</div></div>
+          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:${submitted?'#4caf50':'#f9a825'}">${submitted?'DONE':'LIVE'}</div><div style="font-size:11px;color:#90caf9">Status</div></div>
         </div>
-        <button class="btn btn-acc" onclick="startQuiz()">▶ Start Test Now</button>
+        ${actionBtn}
       </div>`;
     } else {
       document.getElementById('testCard').innerHTML=`<div class="card"><div class="no-test"><div class="ico">📭</div><h3>No Test Today</h3><p style="color:var(--dim);font-size:14px;margin-top:8px">Admin will post today's test soon. Check back!</p></div></div>`;
     }
-  }catch(e){document.getElementById('testCard').innerHTML=`<div class="card" style="color:#f44336">⚠️ Could not load test. Check your internet.</div>`}
+  }catch(e){ document.getElementById('testCard').innerHTML=`<div class="card" style="color:#f44336">⚠️ Could not load test. Check your internet.</div>` }
+}
+
+// ── OLD TESTS TAB ─────────────────────────────────────────
+async function loadOldTests(){
+  document.getElementById('oldTestsData').innerHTML='<div class="spin"></div>';
+  try{
+    const r=await fetch(`${API}?action=getLast7Tests`);
+    const d=await r.json();
+    if(d.success && d.tests.length>0){
+      const todayIso=todayFormats().iso;
+      // Filter out today
+      const old=d.tests.filter(t=>normDate(t.date)!==todayIso);
+      if(old.length===0){
+        document.getElementById('oldTestsData').innerHTML=`<div class="card"><div class="no-test"><div class="ico">📂</div><h3>No Old Tests</h3><p style="color:var(--dim);font-size:13px;margin-top:8px">Previous tests will appear here after 7 days.</p></div></div>`;
+        return;
+      }
+      document.getElementById('oldTestsData').innerHTML=`<div style="margin:14px 16px 8px"><h3 style="font-size:15px;color:var(--dim)">Last 7 Days</h3></div>`+
+        old.map(t=>{
+          const done=hasSubmitted(t.id);
+          return `<div class="old-test-item ${done?'done':''}" onclick="openOldTest('${t.id}','${t.date}')">
+            <div class="oti-icon">${done?'✅':'📝'}</div>
+            <div class="oti-info">
+              <div class="oti-title">${t.title}</div>
+              <div class="oti-sub">📘 ${t.subject} &nbsp;·&nbsp; 📅 ${formatDate(t.date)} &nbsp;·&nbsp; ⏱ ${t.timer} min</div>
+            </div>
+            <div class="oti-badge ${done?'oti-done':'oti-new'}">${done?'Done':'Attempt'}</div>
+          </div>`;
+        }).join('');
+    } else {
+      document.getElementById('oldTestsData').innerHTML=`<div class="card"><div class="no-test"><div class="ico">📂</div><h3>No Old Tests Yet</h3><p style="color:var(--dim);font-size:13px;margin-top:8px">Previous tests will appear here.</p></div></div>`;
+    }
+  }catch(e){ document.getElementById('oldTestsData').innerHTML=`<div class="card" style="color:#f44336">⚠️ Could not load old tests.</div>` }
+}
+
+async function openOldTest(testId, date){
+  if(hasSubmitted(testId)){
+    // Show their result for this test
+    viewMyResult(testId);
+    return;
+  }
+  // Load and start old test
+  document.getElementById('oldTestsData').innerHTML='<div class="spin"></div>';
+  try{
+    const r=await fetch(`${API}?action=getTestById&testId=${enc(testId)}`);
+    const d=await r.json();
+    if(d.success){
+      test=d.test;
+      startQuiz();
+    }
+  }catch(e){ document.getElementById('oldTestsData').innerHTML=`<div class="card" style="color:#f44336">⚠️ Could not load test.</div>` }
+}
+
+async function viewMyResult(testId){
+  // Fetch leaderboard and show student's own result
+  try{
+    const r=await fetch(`${API}?action=getLeaderboard&testId=${enc(testId)}`);
+    const d=await r.json();
+    if(d.success){
+      const me=d.leaderboard.find(s=>String(s.rollNo)===String(student.rollNo));
+      const pos=d.leaderboard.findIndex(s=>String(s.rollNo)===String(student.rollNo));
+      if(me){
+        showResult(me.score, me.total, me.timeTaken, pos+1, d.leaderboard, me.answers||null);
+      } else {
+        alert('Result not found. Please contact admin.');
+      }
+    }
+  }catch(e){ alert('Could not load your result. Try again.'); }
+}
+
+// ── LEADERBOARD TAB ───────────────────────────────────────
+async function loadLbTab(){
+  document.getElementById('lbData').innerHTML='<div class="spin"></div>';
+  document.getElementById('lbSelector').innerHTML='';
+  try{
+    const r=await fetch(`${API}?action=getLast7Tests`);
+    const d=await r.json();
+    if(!d.success||d.tests.length===0){
+      document.getElementById('lbData').innerHTML='<div class="card"><p style="text-align:center;color:var(--dim);padding:20px">No tests available yet.</p></div>';
+      return;
+    }
+    lbTests=d.tests;
+    // Default: today's test or first in list
+    activeLbTestId = lbTests[0].id;
+    // Build selector buttons
+    buildLbSelector();
+    loadLb(activeLbTestId);
+  }catch(e){ document.getElementById('lbData').innerHTML='<div class="card" style="color:#f44336">Could not load leaderboard.</div>' }
+}
+
+function buildLbSelector(){
+  document.getElementById('lbSelector').innerHTML=lbTests.map(t=>`
+    <button class="lb-sel-btn ${t.id===activeLbTestId?'active':''}" onclick="switchLb('${t.id}')">
+      ${formatDate(t.date)}
+    </button>`).join('');
+}
+
+function switchLb(testId){
+  activeLbTestId=testId;
+  buildLbSelector();
+  loadLb(testId);
 }
 
 async function loadLb(testId){
@@ -312,18 +505,25 @@ async function loadLb(testId){
   try{
     const r=await fetch(`${API}?action=getLeaderboard&testId=${enc(testId)}`);
     const d=await r.json();
+    const tInfo=lbTests.find(t=>t.id===testId)||{};
     if(d.success&&d.leaderboard.length>0){
       const rnkC=['g','s','b'];
-      document.getElementById('lbData').innerHTML=`<div class="card"><h3 style="margin-bottom:14px">🏆 Leaderboard — ${test.title}</h3>${d.leaderboard.map((s,i)=>`
-        <div class="lb-row" ${s.rollNo==student.rollNo?'style="background:rgba(255,111,0,.07);border-radius:8px;padding:11px 8px;margin:0 -8px"':''}>
-          <div class="rnk ${rnkC[i]||''}">${i+1}</div>
-          <div class="lb-name">${s.name}${s.rollNo==student.rollNo?' ⭐':''}</div>
-          <div><div class="lb-score">${s.score}/${s.total}</div><div class="lb-time">${fmtT(s.timeTaken)}</div></div>
-        </div>`).join('')}</div>`;
+      const myPos=d.leaderboard.findIndex(s=>String(s.rollNo)===String(student.rollNo));
+      document.getElementById('lbData').innerHTML=`
+        <div class="card">
+          <h3 style="margin-bottom:4px;font-size:15px">🏆 ${tInfo.title||'Leaderboard'}</h3>
+          <p style="font-size:11px;color:var(--dim);margin-bottom:14px">${formatDate(tInfo.date||'')} &nbsp;·&nbsp; ${d.leaderboard.length} participants${myPos>=0?` &nbsp;·&nbsp; Your Rank: <strong style="color:var(--acc)">#${myPos+1}</strong>`:''}</p>
+          ${d.leaderboard.map((s,i)=>`
+          <div class="lb-row" ${String(s.rollNo)===String(student.rollNo)?'style="background:rgba(255,111,0,.07);border-radius:8px;padding:11px 8px;margin:0 -8px"':''}>
+            <div class="rnk ${rnkC[i]||''}">${i+1}</div>
+            <div class="lb-name">${s.name}${String(s.rollNo)===String(student.rollNo)?' ⭐':''}</div>
+            <div><div class="lb-score">${s.score}/${s.total}</div><div class="lb-time">${fmtT(s.timeTaken)}</div></div>
+          </div>`).join('')}
+        </div>`;
     } else {
-      document.getElementById('lbData').innerHTML='<div class="card"><p style="text-align:center;color:var(--dim);padding:20px">No results yet. Be the first! 🚀</p></div>';
+      document.getElementById('lbData').innerHTML='<div class="card"><p style="text-align:center;color:var(--dim);padding:20px">No submissions yet for this test.</p></div>';
     }
-  }catch(e){document.getElementById('lbData').innerHTML='<div class="card" style="color:#f44336">Could not load leaderboard.</div>'}
+  }catch(e){ document.getElementById('lbData').innerHTML='<div class="card" style="color:#f44336">Could not load leaderboard.</div>' }
 }
 
 // ── QUIZ ──────────────────────────────────────────────────
@@ -331,6 +531,16 @@ function startQuiz(){
   if(!test) return;
   curQ=0; ans=new Array(test.questions.length).fill(null);
   timeLeft=test.timer*60; tStart=Date.now();
+  saveQuizState();
+  launchQuizScreen();
+}
+
+function resumeQuiz(){
+  // State already restored in restoreOrHome — just show quiz screen
+  launchQuizScreen();
+}
+
+function launchQuizScreen(){
   document.getElementById('qTitle').textContent=test.title;
   document.getElementById('qSubject').textContent=test.subject.toUpperCase();
   showS('quizScreen'); renderQ(); startTmr();
@@ -351,19 +561,35 @@ function renderQ(){
   document.getElementById('btnSub').style.display=last?'block':'none';
 }
 
-function pickOpt(L){ans[curQ]=L;renderQ()}
-function goQ(d){curQ=Math.max(0,Math.min(test.questions.length-1,curQ+d));renderQ()}
+function pickOpt(L){ ans[curQ]=L; saveQuizState(); renderQ(); }
+function goQ(dir){ curQ=Math.max(0,Math.min(test.questions.length-1,curQ+dir)); saveQuizState(); renderQ(); }
 
 function confirmSub(){
   const left=ans.filter(a=>a===null).length;
   if(confirm(left>0?`${left} question(s) unanswered. Submit anyway?`:'Submit your test now?')) submitQuiz();
 }
 
+// Save ongoing quiz to localStorage so refresh can resume
+function saveQuizState(){
+  try{
+    const elapsed=Math.floor((Date.now()-tStart)/1000);
+    localStorage.setItem(LS_QUIZ_STATE, JSON.stringify({
+      rollNo: student.rollNo,
+      test, ans, curQ,
+      timeLeft, elapsed
+    }));
+  }catch(e){}
+}
+
+function clearQuizState(){
+  localStorage.removeItem(LS_QUIZ_STATE);
+}
+
 function startTmr(){
   clearInterval(timerInt); updTmr();
   timerInt=setInterval(()=>{
-    timeLeft--;updTmr();
-    if(timeLeft<=0){clearInterval(timerInt);alert('⏰ Time Up! Auto-submitting...');submitQuiz();}
+    timeLeft--; updTmr(); saveQuizState();
+    if(timeLeft<=0){ clearInterval(timerInt); alert('⏰ Time Up! Auto-submitting...'); submitQuiz(); }
   },1000);
 }
 
@@ -376,24 +602,29 @@ function updTmr(){
 
 async function submitQuiz(){
   clearInterval(timerInt);
+  clearQuizState(); // remove in-progress state
   const taken=Math.floor((Date.now()-tStart)/1000);
   let score=0;
-  test.questions.forEach((q,i)=>{if(ans[i]===q.correct)score++;});
+  test.questions.forEach((q,i)=>{ if(ans[i]===q.correct) score++; });
   const tot=test.questions.length, pct=Math.round(score/tot*100);
 
-  // Save to Sheets (fire-and-forget)
+  // Mark as submitted locally so re-start is blocked
+  markSubmitted(test.id);
+
+  // Submit to Google Sheets
   try{
     const fd=new FormData();
-    fd.append('action','submitResult');fd.append('rollNo',student.rollNo);
-    fd.append('studentName',student.name);fd.append('testId',test.id);
-    fd.append('score',score);fd.append('total',tot);fd.append('percentage',pct);fd.append('timeTaken',taken);
+    fd.append('action','submitResult'); fd.append('rollNo',student.rollNo);
+    fd.append('studentName',student.name); fd.append('testId',test.id);
+    fd.append('score',score); fd.append('total',tot);
+    fd.append('percentage',pct); fd.append('timeTaken',taken);
     fetch(API,{method:'POST',body:fd,mode:'no-cors'});
   }catch(e){}
 
-  showResult(score,tot,taken);
+  showResult(score,tot,taken,-1,null,null);
 }
 
-async function showResult(score,tot,taken){
+async function showResult(score,tot,taken,knownRank=-1,lb=null,savedAns=null){
   const pct=Math.round(score/tot*100);
   let grade,hbC,emoji;
   if(pct>=80){grade='Excellent!';hbC='hb-gold';emoji='🥇';}
@@ -401,8 +632,6 @@ async function showResult(score,tot,taken){
   else if(pct>=40){grade='Keep Trying!';hbC='hb-pass';emoji='👍';}
   else{grade='Practice More';hbC='hb-fail';emoji='📖';}
 
-  const r=358, circ=2*Math.PI*r/2;
-  const dash=circ*(pct/100);
   document.getElementById('resHero').innerHTML=`
     <div class="res-hero">
       <div class="sc-ring">
@@ -421,23 +650,26 @@ async function showResult(score,tot,taken){
   document.getElementById('rsC').textContent=score;
   document.getElementById('rsW').textContent=tot-score;
   document.getElementById('rsTime').textContent=fmtT(taken);
-  document.getElementById('rsRank').textContent='...';
+  document.getElementById('rsRank').textContent=knownRank>0?`#${knownRank}`:'...';
 
-  // Get rank (after delay to let sheet write)
-  setTimeout(async()=>{
-    try{
-      const r=await fetch(`${API}?action=getLeaderboard&testId=${enc(test.id)}`);
-      const d=await r.json();
-      if(d.success){
-        const pos=d.leaderboard.findIndex(s=>String(s.rollNo)===String(student.rollNo));
-        document.getElementById('rsRank').textContent=pos>=0?`#${pos+1}`:'#-';
-      }
-    }catch(e){}
-  },3000);
+  // Fetch rank if not already known
+  if(knownRank<0){
+    setTimeout(async()=>{
+      try{
+        const r=await fetch(`${API}?action=getLeaderboard&testId=${enc(test.id)}`);
+        const d=await r.json();
+        if(d.success){
+          const pos=d.leaderboard.findIndex(s=>String(s.rollNo)===String(student.rollNo));
+          document.getElementById('rsRank').textContent=pos>=0?`#${pos+1}`:'#-';
+        }
+      }catch(e){}
+    },3000);
+  }
 
-  // Review
+  // Answer review using current ans array
+  const useAns = savedAns || ans;
   document.getElementById('review').innerHTML=test.questions.map((q,i)=>{
-    const ua=ans[i], cor=q.correct, ok=ua===cor;
+    const ua=useAns[i], cor=q.correct, ok=ua===cor;
     const lbls=['A','B','C','D'];
     return `<div class="rev-item">
       <div style="font-size:11px;color:var(--dim);margin-bottom:5px">Q${i+1}</div>
@@ -450,21 +682,36 @@ async function showResult(score,tot,taken){
   showS('resultScreen');
 }
 
-function backHome(){showS('homeScreen');homeTab('today')}
+function backHome(){ showS('homeScreen'); homeTab('today'); }
 
 // ── UTILS ─────────────────────────────────────────────────
-function v(id){return document.getElementById(id).value.trim()}
-function enc(s){return encodeURIComponent(s)}
-function showS(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
-function alert2(id,msg,type){const el=document.getElementById(id);el.className=`alert show al-${type}`;el.textContent=msg}
-function fmtT(s){return`${Math.floor(s/60)}m ${s%60}s`}
-// Returns all 3 date formats — handles Google Sheets date storage variations
+function v(id){ return document.getElementById(id).value.trim() }
+function enc(s){ return encodeURIComponent(s) }
+function showS(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active') }
+function alert2(id,msg,type){ const el=document.getElementById(id); el.className=`alert show al-${type}`; el.textContent=msg }
+function fmtT(s){ return`${Math.floor(s/60)}m ${s%60}s` }
 function todayFormats(){
   const d=new Date();
   const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
   return{iso:`${y}-${m}-${dd}`,dmy:`${dd}/${m}/${y}`,mdy:`${m}/${dd}/${y}`};
 }
-function today(){return todayFormats().iso;}
+function today(){ return todayFormats().iso; }
+function normDate(val){
+  if(!val) return '';
+  const s=String(val).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const dmy=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(dmy) return`${dmy[3]}-${dmy[2].padStart(2,'0')}-${dmy[1].padStart(2,'0')}`;
+  return s;
+}
+function formatDate(d){
+  try{
+    const s=normDate(d);
+    if(!s) return d;
+    const dt=new Date(s+'T00:00:00');
+    return dt.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  }catch(e){return d;}
+}
 </script>
 </body>
 </html>
