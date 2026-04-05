@@ -3,17 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ChemVeda</title>
+<title>ChemVeda — Daily Test Series</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --pri:#1565c0;--pri-dark:#0d47a1;--acc:#ff6f00;--acc2:#ffa000;
   --bg:#0b1726;--card:#152236;--card2:#1a2e4a;--brd:#1e3a5f;
-  --txt:#dce8f5;--dim:#6b8fb5;--suc:#2e7d32;--err:#c62828;
+  --txt:#dce8f5;--dim:#6b8fb5;
 }
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
 .screen{display:none;min-height:100vh;padding-bottom:32px}
 .screen.active{display:block}
+
+/* ── LOADER OVERLAY ── */
+#loaderOverlay{position:fixed;inset:0;z-index:9999;background:rgba(11,23,38,.93);display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;backdrop-filter:blur(3px)}
+#loaderOverlay.show{display:flex}
+.lo-ring{width:56px;height:56px;border-radius:50%;border:5px solid var(--brd);border-top-color:var(--acc);animation:spin .8s linear infinite}
+.lo-msg{font-size:15px;font-weight:600;color:var(--txt);text-align:center;max-width:220px;line-height:1.6}
+.lo-dots::after{content:'';animation:dots 1.4s infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes dots{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}
+
+/* ── SUBMIT OVERLAY ── */
+#submitOverlay{position:fixed;inset:0;z-index:9998;background:rgba(11,23,38,.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(4px)}
+#submitOverlay.show{display:flex}
+.so-ring{width:68px;height:68px;border-radius:50%;border:6px solid var(--brd);border-top-color:#4caf50;border-right-color:var(--acc);animation:spin .9s linear infinite}
+.so-title{font-size:18px;font-weight:800}
+.so-sub{font-size:13px;color:var(--dim);text-align:center}
+.so-steps{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.so-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--dim);transition:.3s}
+.so-step.done{color:#4caf50}
+.so-step.active{color:var(--acc);font-weight:700}
+.so-dot{width:10px;height:10px;border-radius:50%;background:var(--brd);flex-shrink:0;transition:.3s}
+.so-step.done .so-dot{background:#4caf50}
+.so-step.active .so-dot{background:var(--acc);box-shadow:0 0 8px var(--acc)}
+
+/* ── CORE ── */
 .hdr{background:linear-gradient(135deg,var(--pri-dark),var(--pri));padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.5)}
 .hdr h1{font-size:18px;font-weight:700}
 .hdr small{display:block;font-size:10px;color:#90caf9;letter-spacing:2px;text-transform:uppercase}
@@ -24,19 +49,22 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .inp{width:100%;padding:12px 14px;background:#0b1726;border:1.5px solid var(--brd);border-radius:8px;color:var(--txt);font-size:15px;margin-bottom:12px;transition:.2s}
 .inp:focus{outline:none;border-color:var(--acc)}
 label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
-.btn{display:block;width:100%;padding:14px;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:.5px}
-.btn-pri{background:var(--pri);color:#fff}
-.btn-pri:hover{background:var(--pri-dark)}
-.btn-acc{background:var(--acc);color:#fff}
-.btn-acc:hover{background:var(--acc2)}
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;letter-spacing:.5px}
+.btn:active{transform:scale(.97)}
+.btn-pri{background:var(--pri);color:#fff}.btn-pri:hover{background:var(--pri-dark)}
+.btn-acc{background:var(--acc);color:#fff}.btn-acc:hover{background:var(--acc2)}
 .btn-out{background:transparent;color:var(--txt);border:2px solid var(--brd)}
 .btn-sm{padding:8px 16px;font-size:13px;border-radius:6px;display:inline-block;width:auto}
-.btn-done{background:rgba(46,125,50,.15);color:#4caf50;border:1.5px solid #4caf50;cursor:default}
-.alert{padding:11px 14px;border-radius:8px;margin:4px 0 8px;font-size:14px;display:none}
+.btn-done{background:rgba(46,125,50,.15);color:#4caf50;border:1.5px solid #4caf50;cursor:default;pointer-events:none}
+.btn-loading{opacity:.6;pointer-events:none}
+.alert{padding:11px 14px;border-radius:8px;margin:4px 0 8px;font-size:14px;display:none;animation:fadeIn .3s}
 .alert.show{display:block}
 .al-err{background:rgba(198,40,40,.12);border:1px solid #f44336;color:#ef9a9a}
 .al-ok{background:rgba(46,125,50,.12);border:1px solid #4caf50;color:#a5d6a7}
 .al-inf{background:rgba(21,101,192,.15);border:1px solid var(--pri);color:#90caf9}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* ── QUIZ ── */
 .prog-bar{height:5px;background:var(--brd);margin:0 16px 16px;border-radius:3px}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--pri),var(--acc));border-radius:3px;transition:width .4s}
 .timer-wrap{text-align:center}
@@ -45,83 +73,96 @@ label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .q-num{font-size:12px;color:var(--dim);text-align:center;margin:4px 0 14px}
 .q-txt{font-size:16px;line-height:1.7;margin-bottom:18px;font-weight:500}
-.opt{padding:13px 14px;border:2px solid var(--brd);border-radius:9px;margin-bottom:9px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:12px;font-size:14px}
-.opt:hover{border-color:var(--pri);background:rgba(21,101,192,.08)}
+.opt{padding:13px 14px;border:2px solid var(--brd);border-radius:9px;margin-bottom:9px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:12px;font-size:14px;animation:slideUp .22s ease both}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.opt:hover{border-color:var(--pri);background:rgba(21,101,192,.08);transform:translateX(2px)}
 .opt.sel{border-color:var(--acc);background:rgba(255,111,0,.1)}
-.opt.cor{border-color:#4caf50;background:rgba(76,175,80,.12)}
-.opt.wrg{border-color:#f44336;background:rgba(244,67,54,.12)}
-.opt-lbl{min-width:28px;height:28px;border-radius:50%;background:var(--brd);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+.opt-lbl{min-width:28px;height:28px;border-radius:50%;background:var(--brd);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;transition:.15s}
 .opt.sel .opt-lbl{background:var(--acc)}
-.opt.cor .opt-lbl{background:#4caf50}
-.opt.wrg .opt-lbl{background:#f44336}
-.res-hero{background:linear-gradient(135deg,var(--pri-dark),var(--card2));border-radius:12px;margin:14px 16px;padding:28px 20px;text-align:center}
+.nav-row{display:flex;gap:10px;margin:12px 16px}.nav-row .btn{flex:1}
+
+/* ── RESULT ── */
+.res-hero{background:linear-gradient(135deg,var(--pri-dark),var(--card2));border-radius:12px;margin:14px 16px;padding:28px 20px;text-align:center;animation:fadeIn .5s}
 .sc-ring{width:116px;height:116px;border-radius:50%;margin:0 auto 16px;position:relative;display:flex;align-items:center;justify-content:center}
 .sc-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
 .sc-inner{position:relative;text-align:center}
 .sc-num{font-size:28px;font-weight:800;color:var(--acc)}
 .sc-den{font-size:12px;color:var(--dim)}
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 16px}
-.stat{background:var(--card2);border-radius:9px;padding:14px;text-align:center}
+.stat{background:var(--card2);border-radius:9px;padding:14px;text-align:center;animation:fadeIn .4s both}
 .stat-v{font-size:22px;font-weight:800;color:var(--acc)}
 .stat-l{font-size:11px;color:var(--dim);margin-top:3px}
-.lb-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--brd)}
-.lb-row:last-child{border:none}
-.rnk{min-width:30px;height:30px;border-radius:50%;background:var(--brd);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
-.rnk.g{background:#f9a825;color:#000}
-.rnk.s{background:#90a4ae;color:#000}
-.rnk.b{background:#bf8650;color:#fff}
-.lb-name{flex:1;font-size:14px;font-weight:600}
-.lb-score{font-size:18px;font-weight:800;color:var(--acc);text-align:right}
-.lb-time{font-size:11px;color:var(--dim);text-align:right}
 .rev-item{padding:12px 0;border-bottom:1px solid var(--brd)}
 .rev-item:last-child{border:none}
 .rev-q{font-size:14px;margin-bottom:7px;font-weight:500}
-.no-test{text-align:center;padding:32px 20px}
-.no-test .ico{font-size:48px;margin-bottom:12px}
-.nav-row{display:flex;gap:10px;margin:12px 16px}
-.nav-row .btn{flex:1}
-.logout-btn{background:none;border:none;color:#ef9a9a;cursor:pointer;font-size:12px;padding:4px 8px}
 .hero-badge{display:inline-block;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;margin-top:8px}
 .hb-gold{background:rgba(249,168,37,.2);color:#f9a825;border:1px solid #f9a825}
 .hb-silver{background:rgba(144,164,174,.2);color:#90a4ae;border:1px solid #90a4ae}
 .hb-pass{background:rgba(76,175,80,.2);color:#4caf50;border:1px solid #4caf50}
 .hb-fail{background:rgba(244,67,54,.2);color:#f44336;border:1px solid #f44336}
-.spin{text-align:center;padding:40px;color:var(--dim)}
-.spin:after{content:'⟳';font-size:28px;display:block;animation:sp 1s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-/* Old tests list */
-.old-test-item{background:var(--card2);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1.5px solid var(--brd);transition:.2s}
-.old-test-item:hover{border-color:var(--pri)}
-.old-test-item.done{border-color:rgba(76,175,80,.4)}
-.oti-icon{font-size:28px;flex-shrink:0}
-.oti-info{flex:1}
-.oti-title{font-size:14px;font-weight:700}
-.oti-sub{font-size:11px;color:var(--dim);margin-top:3px}
-.oti-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0}
-.oti-done{background:rgba(76,175,80,.15);color:#4caf50;border:1px solid #4caf50}
-.oti-new{background:rgba(255,111,0,.15);color:var(--acc);border:1px solid var(--acc)}
-/* LB section selector */
+
+/* ── LEADERBOARD ── */
+.lb-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--brd)}
+.lb-row:last-child{border:none}
+.rnk{min-width:30px;height:30px;border-radius:50%;background:var(--brd);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+.rnk.g{background:#f9a825;color:#000}.rnk.s{background:#90a4ae;color:#000}.rnk.b{background:#bf8650;color:#fff}
+.lb-name{flex:1;font-size:14px;font-weight:600}
+.lb-score{font-size:18px;font-weight:800;color:var(--acc);text-align:right}
+.lb-time{font-size:11px;color:var(--dim);text-align:right}
 .lb-sel{display:flex;gap:8px;margin:12px 16px 0;flex-wrap:wrap}
 .lb-sel-btn{padding:7px 14px;border-radius:20px;border:1.5px solid var(--brd);background:var(--card2);color:var(--dim);font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
 .lb-sel-btn.active{border-color:var(--acc);color:var(--acc);background:rgba(255,111,0,.08)}
-/* Resume banner */
-.resume-banner{background:linear-gradient(135deg,rgba(255,111,0,.15),rgba(255,160,0,.1));border:1.5px solid var(--acc);border-radius:10px;padding:14px 16px;margin:14px 16px 0;display:flex;align-items:center;gap:12px}
-.rb-icon{font-size:28px;flex-shrink:0}
-.rb-info{flex:1}
+
+/* ── OLD TEST / RESUME ── */
+.old-test-item{background:var(--card2);border-radius:10px;padding:16px;margin:0 16px 10px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1.5px solid var(--brd);transition:.2s;animation:fadeIn .3s both}
+.old-test-item:hover{border-color:var(--pri);transform:translateY(-1px)}
+.old-test-item.done{border-color:rgba(76,175,80,.4)}
+.oti-icon{font-size:28px;flex-shrink:0}.oti-info{flex:1}
+.oti-title{font-size:14px;font-weight:700}
+.oti-sub{font-size:11px;color:var(--dim);margin-top:3px}
+.oti-badge{font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;flex-shrink:0}
+.oti-done{background:rgba(76,175,80,.15);color:#4caf50;border:1px solid #4caf50}
+.oti-new{background:rgba(255,111,0,.15);color:var(--acc);border:1px solid var(--acc)}
+.resume-banner{background:linear-gradient(135deg,rgba(255,111,0,.15),rgba(255,160,0,.08));border:1.5px solid var(--acc);border-radius:10px;padding:14px 16px;margin:14px 16px 0;display:flex;align-items:center;gap:12px;animation:fadeIn .4s}
+.rb-icon{font-size:28px;flex-shrink:0}.rb-info{flex:1}
 .rb-title{font-size:14px;font-weight:700;color:var(--acc)}
 .rb-sub{font-size:12px;color:var(--dim);margin-top:2px}
+.no-test{text-align:center;padding:32px 20px}
+.no-test .ico{font-size:48px;margin-bottom:12px}
+.logout-btn{background:none;border:none;color:#ef9a9a;cursor:pointer;font-size:12px;padding:4px 8px}
+/* Shimmer skeleton */
+.skel{background:linear-gradient(90deg,var(--card2) 25%,var(--brd) 50%,var(--card2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:10px;height:140px;margin:14px 16px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 </style>
 </head>
 <body>
 
-<!-- ════════════════════ SCREEN: AUTH ════════════════════ -->
+<!-- LOADER OVERLAY -->
+<div id="loaderOverlay">
+  <div class="lo-ring"></div>
+  <div class="lo-msg" id="loaderMsg">Please Wait<span class="lo-dots"></span></div>
+</div>
+
+<!-- SUBMIT OVERLAY -->
+<div id="submitOverlay">
+  <div class="so-ring"></div>
+  <div class="so-title">Submitting Your Test</div>
+  <div class="so-sub">Please don't close the app</div>
+  <div class="so-steps">
+    <div class="so-step active" id="step1"><div class="so-dot"></div>Calculating your score</div>
+    <div class="so-step" id="step2"><div class="so-dot"></div>Saving to leaderboard</div>
+    <div class="so-step" id="step3"><div class="so-dot"></div>Fetching your rank</div>
+  </div>
+</div>
+
+<!-- AUTH SCREEN -->
 <div id="authScreen" class="screen active">
   <div class="hdr">
     <div><small>ChemVeda Classes</small><h1>🏆 Free Pro Version- 2026-27</h1></div>
     <span style="font-size:38px">📚</span>
   </div>
   <div style="background:linear-gradient(135deg,var(--pri-dark),var(--card));margin:16px;border-radius:12px;padding:20px;text-align:center">
-    <p style="color:#90caf9;font-size:14px;line-height:1.7">Daily Tests · Live Leaderboard<br>Track Your Progress</p>
+    <p style="color:#90caf9;font-size:14px;line-height:1.9">📅 Daily Tests &nbsp;·&nbsp; 🏆 Live Leaderboard<br>📊 Track Progress &nbsp;·&nbsp; 🎯 CBSE / SSC</p>
   </div>
   <div class="tabs">
     <div class="tab active" id="tabLogin" onclick="authTab('login')">Login</div>
@@ -130,11 +171,11 @@ label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
   <div id="fLogin">
     <div class="card">
       <label>User Name</label>
-      <input class="inp" id="lgRoll" type="text" placeholder="User Name">
+      <input class="inp" id="lgRoll" type="text" placeholder="Enter your username" autocomplete="username">
       <label>Password</label>
-      <input class="inp" id="lgPass" type="password" placeholder="Your Password" onkeydown="if(event.key==='Enter')doLogin()">
+      <input class="inp" id="lgPass" type="password" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
       <div class="alert" id="lgAlert"></div>
-      <button class="btn btn-pri" onclick="doLogin()">Login →</button>
+      <button class="btn btn-pri" id="btnLogin" onclick="doLogin()">Login →</button>
     </div>
   </div>
   <div id="fReg" style="display:none">
@@ -142,18 +183,18 @@ label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
       <label>Full Name</label>
       <input class="inp" id="rgName" type="text" placeholder="Your full name">
       <label>User Name</label>
-      <input class="inp" id="rgRoll" type="text" placeholder="Choose your username">
+      <input class="inp" id="rgRoll" type="text" placeholder="Choose a unique username">
       <label>Password</label>
       <input class="inp" id="rgPass" type="password" placeholder="Create a password">
       <label>Your Class / Category</label>
-      <input class="inp" id="rgClass" type="text" placeholder="e.g. Class 10 / SSC">
+      <input class="inp" id="rgClass" type="text" placeholder="e.g. Class 10 / SSC / UPSC">
       <div class="alert" id="rgAlert"></div>
-      <button class="btn btn-acc" onclick="doRegister()">Register →</button>
+      <button class="btn btn-acc" id="btnRegister" onclick="doRegister()">Register →</button>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════ SCREEN: HOME ════════════════════ -->
+<!-- HOME SCREEN -->
 <div id="homeScreen" class="screen">
   <div class="hdr">
     <div><small>Student Portal</small><h1 id="hdrName">Welcome!</h1></div>
@@ -161,41 +202,33 @@ label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
   </div>
   <div class="tabs">
     <div class="tab active" id="tabToday" onclick="homeTab('today')">📅 Today</div>
-    <div class="tab" id="tabOld"   onclick="homeTab('old')">📂 Old Tests</div>
-    <div class="tab" id="tabLb"    onclick="homeTab('lb')">🏆 Leaderboard</div>
+    <div class="tab" id="tabOld"          onclick="homeTab('old')">📂 Yesterday</div>
+    <div class="tab" id="tabLb"           onclick="homeTab('lb')">🏆 Leaderboard</div>
   </div>
-
-  <!-- TAB: TODAY -->
   <div id="hToday">
     <div id="resumeBanner" style="display:none">
       <div class="resume-banner">
         <div class="rb-icon">⏳</div>
         <div class="rb-info">
           <div class="rb-title">Test In Progress!</div>
-          <div class="rb-sub" id="resumeSubtitle">You have an ongoing test</div>
+          <div class="rb-sub" id="resumeSubtitle">Ongoing test detected</div>
         </div>
         <button class="btn btn-acc btn-sm" onclick="resumeQuiz()">Resume →</button>
       </div>
     </div>
-    <div id="testCard" style="margin-top:4px"></div>
+    <div id="testCard"></div>
   </div>
-
-  <!-- TAB: OLD TESTS -->
-  <div id="hOld" style="display:none">
-    <div id="oldTestsData"></div>
-  </div>
-
-  <!-- TAB: LEADERBOARD -->
+  <div id="hOld" style="display:none"><div id="oldTestsData"></div></div>
   <div id="hLb" style="display:none">
     <div class="lb-sel" id="lbSelector"></div>
     <div id="lbData"></div>
   </div>
 </div>
 
-<!-- ════════════════════ SCREEN: QUIZ ════════════════════ -->
+<!-- QUIZ SCREEN -->
 <div id="quizScreen" class="screen">
   <div class="hdr">
-    <div><small id="qSubject">Quiz</small><h1 id="qTitle">Daily Test</h1></div>
+    <div><small id="qSubject">ChemVeda Test</small><h1 id="qTitle">Daily Test</h1></div>
     <div class="timer-wrap"><div class="timer" id="timerEl">10:00</div></div>
   </div>
   <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:10%"></div></div>
@@ -211,420 +244,350 @@ label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
   </div>
 </div>
 
-<!-- ════════════════════ SCREEN: RESULT ════════════════════ -->
+<!-- RESULT SCREEN -->
 <div id="resultScreen" class="screen">
-  <div class="hdr"><h1>Your Result 🎯</h1></div>
+  <div class="hdr"><div><small>ChemVeda Classes</small><h1>Your Result 🎯</h1></div></div>
   <div id="resHero"></div>
   <div class="stats-grid">
-    <div class="stat"><div class="stat-v" id="rsC" style="color:#4caf50">-</div><div class="stat-l">✅ Correct</div></div>
-    <div class="stat"><div class="stat-v" id="rsW" style="color:#f44336">-</div><div class="stat-l">❌ Wrong</div></div>
-    <div class="stat"><div class="stat-v" id="rsRank" style="color:#f9a825">...</div><div class="stat-l">🏆 Rank</div></div>
-    <div class="stat"><div class="stat-v" id="rsTime">-</div><div class="stat-l">⏱ Time Taken</div></div>
+    <div class="stat" style="animation-delay:.05s"><div class="stat-v" id="rsC" style="color:#4caf50">-</div><div class="stat-l">✅ Correct</div></div>
+    <div class="stat" style="animation-delay:.1s"><div class="stat-v" id="rsW" style="color:#f44336">-</div><div class="stat-l">❌ Wrong</div></div>
+    <div class="stat" style="animation-delay:.15s"><div class="stat-v" id="rsRank" style="color:#f9a825">-</div><div class="stat-l">🏆 Your Rank</div></div>
+    <div class="stat" style="animation-delay:.2s"><div class="stat-v" id="rsTime">-</div><div class="stat-l">⏱ Time Taken</div></div>
   </div>
   <div class="card">
     <h3 style="margin-bottom:16px;font-size:16px">📋 Answer Review</h3>
     <div id="review"></div>
   </div>
-  <div style="margin:16px">
-    <button class="btn btn-pri" onclick="backHome()">← Back to Home</button>
-  </div>
+  <div style="margin:16px"><button class="btn btn-pri" onclick="backHome()">← Back to Home</button></div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════════
-const API = 'https://script.google.com/macros/s/AKfycbyQMeFD3nYd4W-VOQ4CPeePUoxlDum_v4xxUfY8tguRqLpQ1A3ppF0m1BGL0ZZslIyA/exec';
-// ══════════════════════════════════════════════════════════
+const API='https://script.google.com/macros/s/AKfycbzgMTippVVVLNZHzyx2dqWIKo2qk9wotPTI2V0YoFIvKyOrg9jOeNSPUVG7Z-TmWhs/exec';
 
-// ── STATE ─────────────────────────────────────────────────
-let student = null, test = null, curQ = 0, ans = [], timerInt = null, timeLeft = 0, tStart = null;
-// Stores all fetched leaderboard tests for LB tab
-let lbTests = [], activeLbTestId = null;
+let student=null,test=null,curQ=0,ans=[],timerInt=null,timeLeft=0,tStart=null;
+let lbTests=[],activeLbTestId=null;
+const LS_STUDENT='qm_student',LS_QUIZ_STATE='qm_quiz_state',LS_SUBMITTED='qm_submitted';
 
-// ── QUIZ STATE KEYS (localStorage) ────────────────────────
-const LS_STUDENT   = 'qm_student';
-const LS_QUIZ_STATE = 'qm_quiz_state';   // ongoing quiz state
-const LS_SUBMITTED  = 'qm_submitted';    // set of submitted testIds
+// ── LOADER ──────────────────────────────────────────────
+function showLoader(msg='Please Wait'){
+  document.getElementById('loaderMsg').innerHTML=msg+'<span class="lo-dots"></span>';
+  document.getElementById('loaderOverlay').classList.add('show');
+}
+function hideLoader(){document.getElementById('loaderOverlay').classList.remove('show');}
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 
-// ── SESSION RESTORE ────────────────────────────────────────
-window.addEventListener('load', () => {
-  try {
-    const saved = localStorage.getItem(LS_STUDENT);
-    if (saved) { student = JSON.parse(saved); restoreOrHome(); return; }
-  } catch(e){}
+// ── SESSION ─────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  try{const s=localStorage.getItem(LS_STUDENT);if(s){student=JSON.parse(s);restoreOrHome();return;}}catch(e){}
   showS('authScreen');
 });
-
 function restoreOrHome(){
-  // Check if there's an in-progress quiz to resume
   try{
-    const qs = JSON.parse(localStorage.getItem(LS_QUIZ_STATE)||'null');
-    if(qs && qs.rollNo === student.rollNo){
-      // Restore quiz state silently, go to home — show resume banner
-      test = qs.test; ans = qs.ans; curQ = qs.curQ;
-      tStart = Date.now() - (qs.elapsed * 1000);
-      timeLeft = qs.timeLeft;
-      loadHome(true);
-      return;
+    const qs=JSON.parse(localStorage.getItem(LS_QUIZ_STATE)||'null');
+    if(qs&&qs.rollNo===student.rollNo){
+      test=qs.test;ans=qs.ans;curQ=qs.curQ;
+      tStart=Date.now()-(qs.elapsed*1000);
+      timeLeft=Math.max(0,qs.timeLeft);
+      loadHome(true);return;
     }
   }catch(e){}
   loadHome(false);
 }
 
-// ── AUTH ──────────────────────────────────────────────────
+// ── AUTH ────────────────────────────────────────────────
 function authTab(t){
   document.getElementById('tabLogin').classList.toggle('active',t==='login');
   document.getElementById('tabReg').classList.toggle('active',t==='reg');
-  document.getElementById('fLogin').style.display = t==='login'?'block':'none';
-  document.getElementById('fReg').style.display   = t==='reg'?'block':'none';
+  document.getElementById('fLogin').style.display=t==='login'?'block':'none';
+  document.getElementById('fReg').style.display=t==='reg'?'block':'none';
 }
-
 async function doLogin(){
-  const roll=v('lgRoll'), pass=v('lgPass');
-  if(!roll||!pass) return alert2('lgAlert','Fill all fields','err');
-  alert2('lgAlert','Logging in...','inf');
+  const roll=v('lgRoll'),pass=v('lgPass');
+  if(!roll||!pass)return alert2('lgAlert','Please fill in all fields','err');
+  setBtnLoad('btnLogin',true,'Logging in...');
+  showLoader('Verifying credentials');
   try{
-    const r = await fetch(`${API}?action=loginStudent&rollNo=${enc(roll)}&password=${enc(pass)}`);
-    const d = await r.json();
-    if(d.success){
-      student = d.student;
-      localStorage.setItem(LS_STUDENT, JSON.stringify(student));
-      restoreOrHome();
-    } else alert2('lgAlert', d.message||'Invalid credentials','err');
-  }catch(e){ alert2('lgAlert','Connection failed. Check network.','err') }
+    const r=await fetch(`${API}?action=loginStudent&rollNo=${enc(roll)}&password=${enc(pass)}`);
+    const d=await r.json();
+    hideLoader();
+    if(d.success){student=d.student;localStorage.setItem(LS_STUDENT,JSON.stringify(student));restoreOrHome();}
+    else alert2('lgAlert',d.message||'Invalid credentials. Try again.','err');
+  }catch(e){hideLoader();alert2('lgAlert','Connection failed. Check your internet.','err');}
+  setBtnLoad('btnLogin',false,'Login →');
 }
-
 async function doRegister(){
   const name=v('rgName'),roll=v('rgRoll'),pass=v('rgPass'),cls=v('rgClass');
-  if(!name||!roll||!pass||!cls) return alert2('rgAlert','Fill all fields','err');
-  alert2('rgAlert','Registering...','inf');
+  if(!name||!roll||!pass||!cls)return alert2('rgAlert','Please fill in all fields','err');
+  setBtnLoad('btnRegister',true,'Registering...');
+  showLoader('Creating your account');
   try{
     const fd=new FormData();
-    fd.append('action','registerStudent'); fd.append('name',name);
-    fd.append('rollNo',roll); fd.append('password',pass); fd.append('class',cls);
+    fd.append('action','registerStudent');fd.append('name',name);
+    fd.append('rollNo',roll);fd.append('password',pass);fd.append('class',cls);
     await fetch(API,{method:'POST',body:fd,mode:'no-cors'});
-    alert2('rgAlert','✅ Registered! Please login.','ok');
+    hideLoader();
+    alert2('rgAlert','✅ Registration successful! Please login.','ok');
     setTimeout(()=>authTab('login'),1800);
-  }catch(e){ alert2('rgAlert','Error. Try again.','err') }
+  }catch(e){hideLoader();alert2('rgAlert','Something went wrong. Try again.','err');}
+  setBtnLoad('btnRegister',false,'Register →');
 }
-
 function doLogout(){
-  clearInterval(timerInt);
-  student=null; test=null;
-  localStorage.removeItem(LS_STUDENT);
-  localStorage.removeItem(LS_QUIZ_STATE);
+  clearInterval(timerInt);student=null;test=null;
+  localStorage.removeItem(LS_STUDENT);localStorage.removeItem(LS_QUIZ_STATE);
   showS('authScreen');
 }
 
-// ── HOME ──────────────────────────────────────────────────
+// ── HOME ────────────────────────────────────────────────
 async function loadHome(hasResume=false){
   document.getElementById('hdrName').textContent=`Hi, ${student.name.split(' ')[0]}! 👋`;
-  showS('homeScreen');
-  homeTab('today', hasResume);
+  showS('homeScreen');homeTab('today',hasResume);
 }
-
-function homeTab(t, hasResume=false){
+function homeTab(t,hasResume=false){
   ['today','old','lb'].forEach(x=>{
-    const tid = x==='today'?'tabToday':x==='old'?'tabOld':'tabLb';
-    document.getElementById(tid).classList.toggle('active', x===t);
-    const pid = x==='today'?'hToday':x==='old'?'hOld':'hLb';
-    document.getElementById(pid).style.display = x===t?'block':'none';
+    document.getElementById(x==='today'?'tabToday':x==='old'?'tabOld':'tabLb').classList.toggle('active',x===t);
+    document.getElementById(x==='today'?'hToday':x==='old'?'hOld':'hLb').style.display=x===t?'block':'none';
   });
-  if(t==='today') loadTodayTab(hasResume);
-  if(t==='old')   loadOldTests();
-  if(t==='lb')    loadLbTab();
+  if(t==='today')loadTodayTab(hasResume);
+  if(t==='old')loadYesterdayTab();
+  if(t==='lb')loadLbTab();
 }
 
-// ── TODAY TAB ─────────────────────────────────────────────
-function hasSubmitted(testId){ 
-  try{ return JSON.parse(localStorage.getItem(LS_SUBMITTED)||'[]').includes(String(testId)); }
-  catch(e){ return false; }
-}
-function markSubmitted(testId){
-  try{
-    const arr = JSON.parse(localStorage.getItem(LS_SUBMITTED)||'[]');
-    if(!arr.includes(String(testId))) arr.push(String(testId));
-    localStorage.setItem(LS_SUBMITTED, JSON.stringify(arr));
-  }catch(e){}
+// ── SUBMITTED HELPERS ───────────────────────────────────
+function hasSubmitted(id){try{return JSON.parse(localStorage.getItem(LS_SUBMITTED)||'[]').includes(String(id));}catch(e){return false;}}
+function markSubmitted(id){
+  try{const a=JSON.parse(localStorage.getItem(LS_SUBMITTED)||'[]');if(!a.includes(String(id)))a.push(String(id));localStorage.setItem(LS_SUBMITTED,JSON.stringify(a));}catch(e){}
 }
 
+// ── TODAY TAB ───────────────────────────────────────────
 async function loadTodayTab(hasResume=false){
-  // Show / hide resume banner
-  const banner = document.getElementById('resumeBanner');
-  if(hasResume && test){
-    document.getElementById('resumeSubtitle').textContent = `${test.title} — ${fmtT(timeLeft)} remaining`;
+  const banner=document.getElementById('resumeBanner');
+  if(hasResume&&test){
+    document.getElementById('resumeSubtitle').textContent=`${test.title} · ${fmtT(timeLeft)} remaining`;
     banner.style.display='block';
-  } else {
-    banner.style.display='none';
-  }
-
-  document.getElementById('testCard').innerHTML='<div class="spin"></div>';
+  }else banner.style.display='none';
+  document.getElementById('testCard').innerHTML='<div class="skel"></div>';
   try{
-    const fmts=todayFormats(); let d=null;
-    for(const fmt of [fmts.iso,fmts.dmy,fmts.mdy]){
+    const fmts=todayFmts();let d=null;
+    for(const fmt of[fmts.iso,fmts.dmy,fmts.mdy]){
       const r=await fetch(`${API}?action=getTest&date=${enc(fmt)}`);
-      const res=await r.json();
-      if(res.success){d=res;break;}
+      const res=await r.json();if(res.success){d=res;break;}
     }
     if(d&&d.success){
-      // If this is a new test (not in-progress one), update test variable
-      if(!hasResume) test=d.test;
-
-      const submitted = hasSubmitted(d.test.id);
-      const inProgress = hasResume && test && test.id===d.test.id;
-
-      let actionBtn = '';
-      if(submitted){
-        actionBtn=`<button class="btn btn-done" disabled>✅ Already Submitted</button>
-          <button class="btn btn-pri" style="margin-top:8px" onclick="viewMyResult('${d.test.id}')">View My Result →</button>`;
-      } else if(inProgress){
-        actionBtn=`<button class="btn btn-acc" onclick="resumeQuiz()">⏳ Resume Test →</button>`;
-      } else {
-        actionBtn=`<button class="btn btn-acc" onclick="startQuiz()">▶ Start Test Now</button>`;
-      }
-
+      if(!hasResume)test=d.test;
+      const sub=hasSubmitted(d.test.id),inProg=hasResume&&test&&test.id===d.test.id;
+      let btn=sub
+        ?`<button class="btn btn-done" disabled>✅ Test Submitted</button><button class="btn btn-pri" style="margin-top:10px" onclick="viewMyResult('${d.test.id}')">📊 View My Result & Rank →</button>`
+        :inProg
+        ?`<button class="btn btn-acc" onclick="resumeQuiz()">⏳ Resume Ongoing Test →</button>`
+        :`<button class="btn btn-acc" onclick="startQuiz()">▶ Start Test Now</button>`;
       document.getElementById('testCard').innerHTML=`
-      <div class="card" style="background:linear-gradient(135deg,var(--pri-dark),var(--card2));border-left:4px solid var(--acc);margin-top:16px">
-        <div style="font-size:10px;color:#90caf9;letter-spacing:2px;margin-bottom:8px">TODAY'S TEST</div>
+      <div class="card" style="background:linear-gradient(135deg,var(--pri-dark),var(--card2));border-left:4px solid var(--acc);margin-top:14px;animation:fadeIn .4s">
+        <div style="font-size:10px;color:#90caf9;letter-spacing:2px;margin-bottom:8px;font-weight:700">📅 TODAY'S TEST</div>
         <h2 style="font-size:18px;margin-bottom:6px">${d.test.title}</h2>
-        <p style="color:#90caf9;font-size:13px;margin-bottom:16px">📘 ${d.test.subject} &nbsp;·&nbsp; ⏱ ${d.test.timer} min &nbsp;·&nbsp; ❓ ${d.test.questions.length} Questions</p>
+        <p style="color:#90caf9;font-size:13px;margin-bottom:16px">📘 ${d.test.subject} &nbsp;·&nbsp; ⏱ ${d.test.timer} min &nbsp;·&nbsp; ❓ ${d.test.questions.length} Qs</p>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
-          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--acc)">${d.test.questions.length}</div><div style="font-size:11px;color:#90caf9">Qs</div></div>
-          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--acc)">${d.test.timer}</div><div style="font-size:11px;color:#90caf9">Min</div></div>
-          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:${submitted?'#4caf50':'#f9a825'}">${submitted?'DONE':'LIVE'}</div><div style="font-size:11px;color:#90caf9">Status</div></div>
-        </div>
-        ${actionBtn}
-      </div>`;
-    } else {
-      document.getElementById('testCard').innerHTML=`<div class="card"><div class="no-test"><div class="ico">📭</div><h3>No Test Today</h3><p style="color:var(--dim);font-size:14px;margin-top:8px">Admin will post today's test soon. Check back!</p></div></div>`;
+          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--acc)">${d.test.questions.length}</div><div style="font-size:11px;color:#90caf9">Questions</div></div>
+          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--acc)">${d.test.timer}</div><div style="font-size:11px;color:#90caf9">Minutes</div></div>
+          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:${sub?'#4caf50':inProg?'var(--acc2)':'#4caf50'}">${sub?'DONE':inProg?'IN PROG':'LIVE'}</div><div style="font-size:11px;color:#90caf9">Status</div></div>
+        </div>${btn}</div>`;
+    }else{
+      document.getElementById('testCard').innerHTML=`<div class="card" style="animation:fadeIn .4s"><div class="no-test"><div class="ico">📭</div><h3>No Test Today</h3><p style="color:var(--dim);font-size:14px;margin-top:8px">Admin will post today's test soon.<br>Please check back!</p></div></div>`;
     }
-  }catch(e){ document.getElementById('testCard').innerHTML=`<div class="card" style="color:#f44336">⚠️ Could not load test. Check your internet.</div>` }
+  }catch(e){document.getElementById('testCard').innerHTML=`<div class="card" style="border-left:4px solid #f44336"><p style="color:#f44336;font-weight:600">⚠️ Could not load test</p><p style="color:var(--dim);font-size:13px;margin-top:6px">Check your internet and try again.</p><button class="btn btn-out" style="margin-top:12px" onclick="loadTodayTab()">↺ Retry</button></div>`;}
 }
 
-// ── OLD TESTS TAB ─────────────────────────────────────────
-async function loadOldTests(){
-  document.getElementById('oldTestsData').innerHTML='<div class="spin"></div>';
+// ── YESTERDAY TAB (1 day back) ──────────────────────────
+async function loadYesterdayTab(){
+  document.getElementById('oldTestsData').innerHTML='<div class="skel"></div>';
   try{
-    const r=await fetch(`${API}?action=getLast7Tests`);
-    const d=await r.json();
-    if(d.success && d.tests.length>0){
-      const todayIso=todayFormats().iso;
-      // Filter out today
-      const old=d.tests.filter(t=>normDate(t.date)!==todayIso);
-      if(old.length===0){
-        document.getElementById('oldTestsData').innerHTML=`<div class="card"><div class="no-test"><div class="ico">📂</div><h3>No Old Tests</h3><p style="color:var(--dim);font-size:13px;margin-top:8px">Previous tests will appear here after 7 days.</p></div></div>`;
-        return;
-      }
-      document.getElementById('oldTestsData').innerHTML=`<div style="margin:14px 16px 8px"><h3 style="font-size:15px;color:var(--dim)">Last 7 Days</h3></div>`+
-        old.map(t=>{
-          const done=hasSubmitted(t.id);
-          return `<div class="old-test-item ${done?'done':''}" onclick="openOldTest('${t.id}','${t.date}')">
-            <div class="oti-icon">${done?'✅':'📝'}</div>
-            <div class="oti-info">
-              <div class="oti-title">${t.title}</div>
-              <div class="oti-sub">📘 ${t.subject} &nbsp;·&nbsp; 📅 ${formatDate(t.date)} &nbsp;·&nbsp; ⏱ ${t.timer} min</div>
-            </div>
-            <div class="oti-badge ${done?'oti-done':'oti-new'}">${done?'Done':'Attempt'}</div>
-          </div>`;
-        }).join('');
-    } else {
-      document.getElementById('oldTestsData').innerHTML=`<div class="card"><div class="no-test"><div class="ico">📂</div><h3>No Old Tests Yet</h3><p style="color:var(--dim);font-size:13px;margin-top:8px">Previous tests will appear here.</p></div></div>`;
+    const fmts=yesterdayFmts();let d=null;
+    for(const fmt of[fmts.iso,fmts.dmy,fmts.mdy]){
+      const r=await fetch(`${API}?action=getTest&date=${enc(fmt)}`);
+      const res=await r.json();if(res.success){d=res;break;}
     }
-  }catch(e){ document.getElementById('oldTestsData').innerHTML=`<div class="card" style="color:#f44336">⚠️ Could not load old tests.</div>` }
+    if(d&&d.success){
+      const t=d.test,done=hasSubmitted(t.id);
+      document.getElementById('oldTestsData').innerHTML=`
+        <div style="margin:16px 16px 8px;display:flex;align-items:center;gap:8px">
+          <span style="font-size:16px">📂</span>
+          <span style="font-size:14px;font-weight:700;color:var(--dim)">Yesterday's Test</span>
+          <span style="font-size:11px;color:var(--dim)">${formatDate(t.date)}</span>
+        </div>
+        <div class="old-test-item ${done?'done':''}" onclick="openOldTest('${t.id}')">
+          <div class="oti-icon">${done?'✅':'📝'}</div>
+          <div class="oti-info">
+            <div class="oti-title">${t.title}</div>
+            <div class="oti-sub">📘 ${t.subject} &nbsp;·&nbsp; ⏱ ${t.timer} min &nbsp;·&nbsp; ❓ ${t.questions.length} Questions</div>
+          </div>
+          <div class="oti-badge ${done?'oti-done':'oti-new'}">${done?'Done':'Attempt'}</div>
+        </div>`;
+    }else{
+      document.getElementById('oldTestsData').innerHTML=`<div class="card" style="animation:fadeIn .4s"><div class="no-test"><div class="ico">📂</div><h3>No Test Yesterday</h3><p style="color:var(--dim);font-size:13px;margin-top:8px">Yesterday's test is not available.</p></div></div>`;
+    }
+  }catch(e){document.getElementById('oldTestsData').innerHTML=`<div class="card" style="border-left:4px solid #f44336"><p style="color:#f44336">⚠️ Could not load</p><button class="btn btn-out" style="margin-top:12px" onclick="loadYesterdayTab()">↺ Retry</button></div>`;}
 }
 
-async function openOldTest(testId, date){
-  if(hasSubmitted(testId)){
-    // Show their result for this test
-    viewMyResult(testId);
-    return;
-  }
-  // Load and start old test
-  document.getElementById('oldTestsData').innerHTML='<div class="spin"></div>';
+async function openOldTest(testId){
+  if(hasSubmitted(testId)){viewMyResult(testId);return;}
+  showLoader('Loading test');
   try{
     const r=await fetch(`${API}?action=getTestById&testId=${enc(testId)}`);
-    const d=await r.json();
-    if(d.success){
-      test=d.test;
-      startQuiz();
-    }
-  }catch(e){ document.getElementById('oldTestsData').innerHTML=`<div class="card" style="color:#f44336">⚠️ Could not load test.</div>` }
+    const d=await r.json();hideLoader();
+    if(d.success){test=d.test;startQuiz();}
+    else alert('Could not load test. Try again.');
+  }catch(e){hideLoader();alert('Could not load test. Check internet.');}
 }
 
 async function viewMyResult(testId){
-  // Fetch leaderboard and show student's own result
+  showLoader('Loading your result');
   try{
     const r=await fetch(`${API}?action=getLeaderboard&testId=${enc(testId)}`);
     const d=await r.json();
+    const tr=await fetch(`${API}?action=getTestById&testId=${enc(testId)}`);
+    const td=await tr.json();
+    hideLoader();
+    if(td.success)test=td.test;
     if(d.success){
       const me=d.leaderboard.find(s=>String(s.rollNo)===String(student.rollNo));
       const pos=d.leaderboard.findIndex(s=>String(s.rollNo)===String(student.rollNo));
-      if(me){
-        showResult(me.score, me.total, me.timeTaken, pos+1, d.leaderboard, me.answers||null);
-      } else {
-        alert('Result not found. Please contact admin.');
-      }
+      if(me)showResult(me.score,me.total,me.timeTaken,pos+1);
+      else alert('Your result was not found.');
     }
-  }catch(e){ alert('Could not load your result. Try again.'); }
+  }catch(e){hideLoader();alert('Could not load result. Try again.');}
 }
 
-// ── LEADERBOARD TAB ───────────────────────────────────────
+// ── LEADERBOARD TAB ─────────────────────────────────────
 async function loadLbTab(){
-  document.getElementById('lbData').innerHTML='<div class="spin"></div>';
+  document.getElementById('lbData').innerHTML='<div class="skel" style="height:200px"></div>';
   document.getElementById('lbSelector').innerHTML='';
+  showLoader('Loading leaderboard');
   try{
     const r=await fetch(`${API}?action=getLast7Tests`);
-    const d=await r.json();
-    if(!d.success||d.tests.length===0){
-      document.getElementById('lbData').innerHTML='<div class="card"><p style="text-align:center;color:var(--dim);padding:20px">No tests available yet.</p></div>';
-      return;
-    }
-    lbTests=d.tests;
-    // Default: today's test or first in list
-    activeLbTestId = lbTests[0].id;
-    // Build selector buttons
-    buildLbSelector();
-    loadLb(activeLbTestId);
-  }catch(e){ document.getElementById('lbData').innerHTML='<div class="card" style="color:#f44336">Could not load leaderboard.</div>' }
+    const d=await r.json();hideLoader();
+    if(!d.success||d.tests.length===0){document.getElementById('lbData').innerHTML='<div class="card"><p style="text-align:center;color:var(--dim);padding:20px">No tests available yet.</p></div>';return;}
+    lbTests=d.tests;activeLbTestId=lbTests[0].id;
+    buildLbSelector();loadLb(activeLbTestId);
+  }catch(e){hideLoader();document.getElementById('lbData').innerHTML='<div class="card" style="color:#f44336">⚠️ Could not load leaderboard.</div>';}
 }
-
 function buildLbSelector(){
-  document.getElementById('lbSelector').innerHTML=lbTests.map(t=>`
-    <button class="lb-sel-btn ${t.id===activeLbTestId?'active':''}" onclick="switchLb('${t.id}')">
-      ${formatDate(t.date)}
-    </button>`).join('');
+  document.getElementById('lbSelector').innerHTML=lbTests.map(t=>`<button class="lb-sel-btn ${t.id===activeLbTestId?'active':''}" onclick="switchLb('${t.id}')">${formatDate(t.date)}</button>`).join('');
 }
-
-function switchLb(testId){
-  activeLbTestId=testId;
-  buildLbSelector();
-  loadLb(testId);
-}
-
+function switchLb(id){activeLbTestId=id;buildLbSelector();loadLb(id);}
 async function loadLb(testId){
-  document.getElementById('lbData').innerHTML='<div class="spin"></div>';
+  document.getElementById('lbData').innerHTML='<div class="skel" style="height:180px"></div>';
   try{
     const r=await fetch(`${API}?action=getLeaderboard&testId=${enc(testId)}`);
     const d=await r.json();
     const tInfo=lbTests.find(t=>t.id===testId)||{};
     if(d.success&&d.leaderboard.length>0){
-      const rnkC=['g','s','b'];
+      const rc=['g','s','b'];
       const myPos=d.leaderboard.findIndex(s=>String(s.rollNo)===String(student.rollNo));
       document.getElementById('lbData').innerHTML=`
-        <div class="card">
+        <div class="card" style="animation:fadeIn .4s">
           <h3 style="margin-bottom:4px;font-size:15px">🏆 ${tInfo.title||'Leaderboard'}</h3>
-          <p style="font-size:11px;color:var(--dim);margin-bottom:14px">${formatDate(tInfo.date||'')} &nbsp;·&nbsp; ${d.leaderboard.length} participants${myPos>=0?` &nbsp;·&nbsp; Your Rank: <strong style="color:var(--acc)">#${myPos+1}</strong>`:''}</p>
+          <p style="font-size:11px;color:var(--dim);margin-bottom:16px">${formatDate(tInfo.date||'')} &nbsp;·&nbsp; ${d.leaderboard.length} students${myPos>=0?` &nbsp;·&nbsp; <strong style="color:var(--acc)">Your Rank: #${myPos+1}</strong>`:' &nbsp;·&nbsp; <span style="color:var(--dim)">Not submitted</span>'}</p>
           ${d.leaderboard.map((s,i)=>`
-          <div class="lb-row" ${String(s.rollNo)===String(student.rollNo)?'style="background:rgba(255,111,0,.07);border-radius:8px;padding:11px 8px;margin:0 -8px"':''}>
-            <div class="rnk ${rnkC[i]||''}">${i+1}</div>
-            <div class="lb-name">${s.name}${String(s.rollNo)===String(student.rollNo)?' ⭐':''}</div>
-            <div><div class="lb-score">${s.score}/${s.total}</div><div class="lb-time">${fmtT(s.timeTaken)}</div></div>
+          <div class="lb-row" style="${String(s.rollNo)===String(student.rollNo)?'background:rgba(255,111,0,.07);border-radius:8px;padding:11px 8px;margin:0 -8px':''}">
+            <div class="rnk ${rc[i]||''}">${i+1}</div>
+            <div class="lb-name">${s.name}${String(s.rollNo)===String(student.rollNo)?' ⭐':''}<br><span style="font-size:10px;color:var(--dim);font-weight:400">${s.studentClass||''}</span></div>
+            <div style="text-align:right"><div class="lb-score">${s.score}/${s.total}</div><div class="lb-time">${s.percentage}% · ${fmtT(s.timeTaken)}</div></div>
           </div>`).join('')}
         </div>`;
-    } else {
-      document.getElementById('lbData').innerHTML='<div class="card"><p style="text-align:center;color:var(--dim);padding:20px">No submissions yet for this test.</p></div>';
+    }else{
+      document.getElementById('lbData').innerHTML='<div class="card"><p style="text-align:center;color:var(--dim);padding:20px">No submissions yet. Be the first! 🚀</p></div>';
     }
-  }catch(e){ document.getElementById('lbData').innerHTML='<div class="card" style="color:#f44336">Could not load leaderboard.</div>' }
+  }catch(e){document.getElementById('lbData').innerHTML='<div class="card" style="color:#f44336">⚠️ Could not load.</div>';}
 }
 
-// ── QUIZ ──────────────────────────────────────────────────
+// ── QUIZ ────────────────────────────────────────────────
 function startQuiz(){
-  if(!test) return;
-  curQ=0; ans=new Array(test.questions.length).fill(null);
-  timeLeft=test.timer*60; tStart=Date.now();
-  saveQuizState();
-  launchQuizScreen();
+  if(!test)return;
+  curQ=0;ans=new Array(test.questions.length).fill(null);
+  timeLeft=test.timer*60;tStart=Date.now();
+  saveQS();launchQ();
 }
-
-function resumeQuiz(){
-  // State already restored in restoreOrHome — just show quiz screen
-  launchQuizScreen();
-}
-
-function launchQuizScreen(){
+function resumeQuiz(){launchQ();}
+function launchQ(){
   document.getElementById('qTitle').textContent=test.title;
   document.getElementById('qSubject').textContent=test.subject.toUpperCase();
-  showS('quizScreen'); renderQ(); startTmr();
+  showS('quizScreen');renderQ();startTmr();
 }
-
 function renderQ(){
-  const q=test.questions[curQ], tot=test.questions.length;
+  const q=test.questions[curQ],tot=test.questions.length;
   document.getElementById('qNum').textContent=`Question ${curQ+1} of ${tot}`;
   document.getElementById('qTxt').textContent=q.question;
   document.getElementById('progFill').style.width=`${((curQ+1)/tot)*100}%`;
   document.getElementById('opts').innerHTML=['A','B','C','D'].map((L,i)=>`
-    <div class="opt ${ans[curQ]===L?'sel':''}" onclick="pickOpt('${L}')">
-      <div class="opt-lbl">${L}</div><div>${q.options[i]}</div>
-    </div>`).join('');
+    <div class="opt ${ans[curQ]===L?'sel':''}" style="animation-delay:${i*.06}s" onclick="pickOpt('${L}')">
+      <div class="opt-lbl">${L}</div><div>${q.options[i]}</div></div>`).join('');
   const last=curQ===tot-1;
   document.getElementById('btnPrev').style.display=curQ===0?'none':'block';
   document.getElementById('btnNext').style.display=last?'none':'block';
   document.getElementById('btnSub').style.display=last?'block':'none';
 }
-
-function pickOpt(L){ ans[curQ]=L; saveQuizState(); renderQ(); }
-function goQ(dir){ curQ=Math.max(0,Math.min(test.questions.length-1,curQ+dir)); saveQuizState(); renderQ(); }
-
+function pickOpt(L){ans[curQ]=L;saveQS();renderQ();}
+function goQ(d){curQ=Math.max(0,Math.min(test.questions.length-1,curQ+d));saveQS();renderQ();}
 function confirmSub(){
   const left=ans.filter(a=>a===null).length;
-  if(confirm(left>0?`${left} question(s) unanswered. Submit anyway?`:'Submit your test now?')) submitQuiz();
+  if(confirm(left>0?`⚠️ ${left} question(s) unanswered.\nSubmit anyway?`:'Submit your test now?'))submitQuiz();
 }
-
-// Save ongoing quiz to localStorage so refresh can resume
-function saveQuizState(){
-  try{
-    const elapsed=Math.floor((Date.now()-tStart)/1000);
-    localStorage.setItem(LS_QUIZ_STATE, JSON.stringify({
-      rollNo: student.rollNo,
-      test, ans, curQ,
-      timeLeft, elapsed
-    }));
-  }catch(e){}
+function saveQS(){
+  try{const e=Math.floor((Date.now()-tStart)/1000);localStorage.setItem(LS_QUIZ_STATE,JSON.stringify({rollNo:student.rollNo,test,ans,curQ,timeLeft,elapsed:e}));}catch(e){}
 }
-
-function clearQuizState(){
-  localStorage.removeItem(LS_QUIZ_STATE);
-}
-
+function clearQS(){localStorage.removeItem(LS_QUIZ_STATE);}
 function startTmr(){
-  clearInterval(timerInt); updTmr();
-  timerInt=setInterval(()=>{
-    timeLeft--; updTmr(); saveQuizState();
-    if(timeLeft<=0){ clearInterval(timerInt); alert('⏰ Time Up! Auto-submitting...'); submitQuiz(); }
-  },1000);
+  clearInterval(timerInt);updTmr();
+  timerInt=setInterval(()=>{timeLeft--;updTmr();saveQS();if(timeLeft<=0){clearInterval(timerInt);submitQuiz();}},1000);
 }
-
 function updTmr(){
-  const m=String(Math.floor(timeLeft/60)).padStart(2,'0'), s=String(timeLeft%60).padStart(2,'0');
+  const m=String(Math.floor(timeLeft/60)).padStart(2,'0'),s=String(timeLeft%60).padStart(2,'0');
   const el=document.getElementById('timerEl');
-  el.textContent=`${m}:${s}`;
-  el.className='timer'+(timeLeft<=60?' warn':'');
+  el.textContent=`${m}:${s}`;el.className='timer'+(timeLeft<=60?' warn':'');
 }
 
 async function submitQuiz(){
-  clearInterval(timerInt);
-  clearQuizState(); // remove in-progress state
+  clearInterval(timerInt);clearQS();
   const taken=Math.floor((Date.now()-tStart)/1000);
   let score=0;
-  test.questions.forEach((q,i)=>{ if(ans[i]===q.correct) score++; });
-  const tot=test.questions.length, pct=Math.round(score/tot*100);
-
-  // Mark as submitted locally so re-start is blocked
+  test.questions.forEach((q,i)=>{if(ans[i]===q.correct)score++;});
+  const tot=test.questions.length,pct=Math.round(score/tot*100);
   markSubmitted(test.id);
 
-  // Submit to Google Sheets
+  // Animated submit overlay
+  showSubmitOL();
+  await delay(700);setStep(1,'done');setStep(2,'active');
+
   try{
     const fd=new FormData();
-    fd.append('action','submitResult'); fd.append('rollNo',student.rollNo);
-    fd.append('studentName',student.name); fd.append('testId',test.id);
-    fd.append('score',score); fd.append('total',tot);
-    fd.append('percentage',pct); fd.append('timeTaken',taken);
-    fetch(API,{method:'POST',body:fd,mode:'no-cors'});
+    fd.append('action','submitResult');
+    fd.append('rollNo',student.rollNo);
+    fd.append('studentName',student.name);
+    fd.append('studentClass',student.class||'');
+    fd.append('testId',test.id);
+    fd.append('testTitle',test.title);
+    fd.append('testSubject',test.subject);
+    fd.append('score',score);fd.append('total',tot);
+    fd.append('percentage',pct);fd.append('timeTaken',taken);
+    await fetch(API,{method:'POST',body:fd,mode:'no-cors'});
   }catch(e){}
+  await delay(600);setStep(2,'done');setStep(3,'active');
 
-  showResult(score,tot,taken,-1,null,null);
+  let rank=-1;
+  try{
+    await delay(2200);
+    const r=await fetch(`${API}?action=getLeaderboard&testId=${enc(test.id)}`);
+    const d=await r.json();
+    if(d.success){const p=d.leaderboard.findIndex(s=>String(s.rollNo)===String(student.rollNo));rank=p>=0?p+1:-1;}
+  }catch(e){}
+  setStep(3,'done');await delay(400);hideSubmitOL();
+  showResult(score,tot,taken,rank);
 }
 
-async function showResult(score,tot,taken,knownRank=-1,lb=null,savedAns=null){
+function showSubmitOL(){setStep(1,'active');setStep(2,'');setStep(3,'');document.getElementById('submitOverlay').classList.add('show');}
+function hideSubmitOL(){document.getElementById('submitOverlay').classList.remove('show');}
+function setStep(n,s){const e=document.getElementById('step'+n);e.className='so-step'+(s?' '+s:'');}
+
+async function showResult(score,tot,taken,rank=-1){
   const pct=Math.round(score/tot*100);
   let grade,hbC,emoji;
   if(pct>=80){grade='Excellent!';hbC='hb-gold';emoji='🥇';}
@@ -646,71 +609,49 @@ async function showResult(score,tot,taken,knownRank=-1,lb=null,savedAns=null){
       <div style="font-size:26px;font-weight:800;color:var(--acc)">${pct}%</div>
       <div class="hero-badge ${hbC}">${student.name}</div>
     </div>`;
-
   document.getElementById('rsC').textContent=score;
   document.getElementById('rsW').textContent=tot-score;
   document.getElementById('rsTime').textContent=fmtT(taken);
-  document.getElementById('rsRank').textContent=knownRank>0?`#${knownRank}`:'...';
+  document.getElementById('rsRank').textContent=rank>0?`#${rank}`:'—';
 
-  // Fetch rank if not already known
-  if(knownRank<0){
-    setTimeout(async()=>{
-      try{
-        const r=await fetch(`${API}?action=getLeaderboard&testId=${enc(test.id)}`);
-        const d=await r.json();
-        if(d.success){
-          const pos=d.leaderboard.findIndex(s=>String(s.rollNo)===String(student.rollNo));
-          document.getElementById('rsRank').textContent=pos>=0?`#${pos+1}`:'#-';
-        }
-      }catch(e){}
-    },3000);
-  }
-
-  // Answer review using current ans array
-  const useAns = savedAns || ans;
   document.getElementById('review').innerHTML=test.questions.map((q,i)=>{
-    const ua=useAns[i], cor=q.correct, ok=ua===cor;
-    const lbls=['A','B','C','D'];
+    const ua=ans[i],cor=q.correct,ok=ua===cor,lbls=['A','B','C','D'];
     return `<div class="rev-item">
-      <div style="font-size:11px;color:var(--dim);margin-bottom:5px">Q${i+1}</div>
+      <div style="font-size:11px;color:var(--dim);margin-bottom:5px;font-weight:600">Q${i+1}</div>
       <div class="rev-q">${q.question}</div>
-      <div style="font-size:13px;color:${ok?'#4caf50':'#f44336'}">${ok?'✅':'❌'} Your answer: ${ua?`${ua}. ${q.options[lbls.indexOf(ua)]}`:'Not answered'}</div>
+      <div style="font-size:13px;color:${ok?'#4caf50':'#f44336'}">${ok?'✅':'❌'} Your answer: ${ua?`${ua}. ${q.options[lbls.indexOf(ua)]}`:'<em>Not answered</em>'}</div>
       ${!ok?`<div style="font-size:13px;color:#4caf50;margin-top:4px">✅ Correct: ${cor}. ${q.options[lbls.indexOf(cor)]}</div>`:''}
     </div>`;
   }).join('');
-
   showS('resultScreen');
 }
+function backHome(){showS('homeScreen');homeTab('today');}
 
-function backHome(){ showS('homeScreen'); homeTab('today'); }
-
-// ── UTILS ─────────────────────────────────────────────────
-function v(id){ return document.getElementById(id).value.trim() }
-function enc(s){ return encodeURIComponent(s) }
-function showS(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active') }
-function alert2(id,msg,type){ const el=document.getElementById(id); el.className=`alert show al-${type}`; el.textContent=msg }
-function fmtT(s){ return`${Math.floor(s/60)}m ${s%60}s` }
-function todayFormats(){
-  const d=new Date();
+// ── UTILS ───────────────────────────────────────────────
+function v(id){return document.getElementById(id).value.trim()}
+function enc(s){return encodeURIComponent(s)}
+function showS(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function alert2(id,msg,type){const el=document.getElementById(id);el.className=`alert show al-${type}`;el.textContent=msg}
+function fmtT(s){return`${Math.floor(s/60)}m ${s%60}s`}
+function setBtnLoad(id,loading,txt){const b=document.getElementById(id);if(b){b.textContent=txt;b.classList.toggle('btn-loading',loading);}}
+function todayFmts(){
+  const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
+  return{iso:`${y}-${m}-${dd}`,dmy:`${dd}/${m}/${y}`,mdy:`${m}/${dd}/${y}`};
+}
+function yesterdayFmts(){
+  const d=new Date();d.setDate(d.getDate()-1);
   const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
   return{iso:`${y}-${m}-${dd}`,dmy:`${dd}/${m}/${y}`,mdy:`${m}/${dd}/${y}`};
 }
-function today(){ return todayFormats().iso; }
 function normDate(val){
-  if(!val) return '';
-  const s=String(val).trim();
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  if(!val)return'';const s=String(val).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
   const dmy=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if(dmy) return`${dmy[3]}-${dmy[2].padStart(2,'0')}-${dmy[1].padStart(2,'0')}`;
+  if(dmy)return`${dmy[3]}-${dmy[2].padStart(2,'0')}-${dmy[1].padStart(2,'0')}`;
   return s;
 }
 function formatDate(d){
-  try{
-    const s=normDate(d);
-    if(!s) return d;
-    const dt=new Date(s+'T00:00:00');
-    return dt.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-  }catch(e){return d;}
+  try{const s=normDate(d);if(!s)return d;const dt=new Date(s+'T00:00:00');return dt.toLocaleDateString('en-IN',{day:'numeric',month:'short'});}catch(e){return d;}
 }
 </script>
 </body>
