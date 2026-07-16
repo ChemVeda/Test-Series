@@ -1,658 +1,1514 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ChemVeda — Daily Test Series</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#0a0616" />
+<title>ChemVeda Pro 2026-27</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
+/* ============ Reset & Base ============ */
+*,*:before,*:after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0a0616;color:#e9e6f2;font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input,select,textarea{font:inherit;color:inherit;background:none;border:none;outline:none}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+::selection{background:#a259ff55;color:#fff}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#2a1d4a;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#3d2a6b}
+
+/* ============ Theme Tokens ============ */
 :root{
-  --pri:#1565c0;--pri-dark:#0d47a1;--acc:#ff6f00;--acc2:#ffa000;
-  --bg:#0b1726;--card:#152236;--card2:#1a2e4a;--brd:#1e3a5f;
-  --txt:#dce8f5;--dim:#6b8fb5;
+  --bg:#0a0616;
+  --bg-2:#110828;
+  --bg-3:#1a0e3a;
+  --surface:rgba(255,255,255,0.04);
+  --surface-2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.08);
+  --border-strong:rgba(255,255,255,0.14);
+  --text:#e9e6f2;
+  --text-dim:#a89ec7;
+  --text-mute:#6b6188;
+  --purple:#a259ff;
+  --purple-2:#7c3aed;
+  --green:#4ade80;
+  --green-2:#22c55e;
+  --red:#f87171;
+  --amber:#fbbf24;
+  --blue:#60a5fa;
+  --radius:14px;
+  --radius-lg:22px;
+  --shadow-lg:0 20px 60px -20px rgba(162,89,255,.35);
 }
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
-.screen{display:none;min-height:100vh;padding-bottom:32px}
-.screen.active{display:block}
 
-/* ── LOADER OVERLAY ── */
-#loaderOverlay{position:fixed;inset:0;z-index:9999;background:rgba(11,23,38,.93);display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;backdrop-filter:blur(3px)}
-#loaderOverlay.show{display:flex}
-.lo-ring{width:56px;height:56px;border-radius:50%;border:5px solid var(--brd);border-top-color:var(--acc);animation:spin .8s linear infinite}
-.lo-msg{font-size:15px;font-weight:600;color:var(--txt);text-align:center;max-width:220px;line-height:1.6}
-.lo-dots::after{content:'';animation:dots 1.4s infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes dots{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}
+/* ============ Ambient Background ============ */
+body::before,body::after{content:"";position:fixed;pointer-events:none;z-index:-1;filter:blur(80px);opacity:.55}
+body::before{top:-10%;left:-10%;width:60vw;height:60vw;background:radial-gradient(closest-side,#7c3aed,transparent 70%)}
+body::after{bottom:-15%;right:-15%;width:65vw;height:65vw;background:radial-gradient(closest-side,#22c55e,transparent 70%);opacity:.35}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.06;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' /></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
 
-/* ── SUBMIT OVERLAY ── */
-#submitOverlay{position:fixed;inset:0;z-index:9998;background:rgba(11,23,38,.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(4px)}
-#submitOverlay.show{display:flex}
-.so-ring{width:68px;height:68px;border-radius:50%;border:6px solid var(--brd);border-top-color:#4caf50;border-right-color:var(--acc);animation:spin .9s linear infinite}
-.so-title{font-size:18px;font-weight:800}
-.so-sub{font-size:13px;color:var(--dim);text-align:center}
-.so-steps{display:flex;flex-direction:column;gap:10px;margin-top:6px}
-.so-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--dim);transition:.3s}
-.so-step.done{color:#4caf50}
-.so-step.active{color:var(--acc);font-weight:700}
-.so-dot{width:10px;height:10px;border-radius:50%;background:var(--brd);flex-shrink:0;transition:.3s}
-.so-step.done .so-dot{background:#4caf50}
-.so-step.active .so-dot{background:var(--acc);box-shadow:0 0 8px var(--acc)}
+/* ============ Layout ============ */
+#app{position:relative;z-index:1;min-height:100vh;padding-bottom:96px}
+.container{max-width:1180px;margin:0 auto;padding:0 20px}
+.hidden{display:none !important}
 
-/* ── CORE ── */
-.hdr{background:linear-gradient(135deg,var(--pri-dark),var(--pri));padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.5)}
-.hdr h1{font-size:18px;font-weight:700}
-.hdr small{display:block;font-size:10px;color:#90caf9;letter-spacing:2px;text-transform:uppercase}
-.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--brd)}
-.tab{flex:1;padding:11px 4px;text-align:center;cursor:pointer;font-weight:600;font-size:12px;color:var(--dim);border-bottom:3px solid transparent;transition:.2s;white-space:nowrap}
-.tab.active{color:var(--acc);border-bottom-color:var(--acc)}
-.card{background:var(--card);border-radius:12px;padding:18px;margin:12px 16px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
-.inp{width:100%;padding:12px 14px;background:#0b1726;border:1.5px solid var(--brd);border-radius:8px;color:var(--txt);font-size:15px;margin-bottom:12px;transition:.2s}
-.inp:focus{outline:none;border-color:var(--acc)}
-label{font-size:12px;color:var(--dim);margin-bottom:5px;display:block}
-.btn{display:block;width:100%;padding:14px;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;letter-spacing:.5px}
-.btn:active{transform:scale(.97)}
-.btn-pri{background:var(--pri);color:#fff}.btn-pri:hover{background:var(--pri-dark)}
-.btn-acc{background:var(--acc);color:#fff}.btn-acc:hover{background:var(--acc2)}
-.btn-out{background:transparent;color:var(--txt);border:2px solid var(--brd)}
-.btn-sm{padding:8px 16px;font-size:13px;border-radius:6px;display:inline-block;width:auto}
-.btn-done{background:rgba(46,125,50,.15);color:#4caf50;border:1.5px solid #4caf50;cursor:default;pointer-events:none}
-.btn-loading{opacity:.6;pointer-events:none}
-.alert{padding:11px 14px;border-radius:8px;margin:4px 0 8px;font-size:14px;display:none;animation:fadeIn .3s}
-.alert.show{display:block}
-.al-err{background:rgba(198,40,40,.12);border:1px solid #f44336;color:#ef9a9a}
-.al-ok{background:rgba(46,125,50,.12);border:1px solid #4caf50;color:#a5d6a7}
-.al-inf{background:rgba(21,101,192,.15);border:1px solid var(--pri);color:#90caf9}
-@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+/* ============ Typography ============ */
+h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;letter-spacing:-.01em;color:#fff}
+h1{font-size:clamp(1.8rem,4vw,2.5rem);font-weight:700;line-height:1.1}
+h2{font-size:1.4rem;font-weight:600}
+h3{font-size:1.1rem;font-weight:600}
+.mono{font-family:'JetBrains Mono','Fira Code',ui-monospace,monospace}
+.hi{font-family:'Noto Sans Devanagari','Inter',sans-serif}
+.muted{color:var(--text-dim)}
+.mute2{color:var(--text-mute)}
+.tiny{font-size:.75rem}
 
-/* ── QUIZ ── */
-.prog-bar{height:5px;background:var(--brd);margin:0 16px 16px;border-radius:3px}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--pri),var(--acc));border-radius:3px;transition:width .4s}
-.timer-wrap{text-align:center}
-.timer{font-size:26px;font-weight:800;color:var(--acc);letter-spacing:1px}
-.timer.warn{color:#f44336;animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.q-num{font-size:12px;color:var(--dim);text-align:center;margin:4px 0 14px}
-.q-txt{font-size:16px;line-height:1.7;margin-bottom:18px;font-weight:500}
-.opt{padding:13px 14px;border:2px solid var(--brd);border-radius:9px;margin-bottom:9px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:12px;font-size:14px;animation:slideUp .22s ease both}
-@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.opt:hover{border-color:var(--pri);background:rgba(21,101,192,.08);transform:translateX(2px)}
-.opt.sel{border-color:var(--acc);background:rgba(255,111,0,.1)}
-.opt-lbl{min-width:28px;height:28px;border-radius:50%;background:var(--brd);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;transition:.15s}
-.opt.sel .opt-lbl{background:var(--acc)}
-.nav-row{display:flex;gap:10px;margin:12px 16px}.nav-row .btn{flex:1}
+/* ============ Cards / Glass ============ */
+.glass{background:var(--surface);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:0 8px 40px -12px rgba(0,0,0,.5)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:border-color .2s ease,transform .2s ease}
+.card:hover{border-color:var(--border-strong)}
+.card.glow{background:linear-gradient(135deg,rgba(162,89,255,.12),rgba(74,222,128,.06));border-color:rgba(162,89,255,.25)}
 
-/* ── RESULT ── */
-.res-hero{background:linear-gradient(135deg,var(--pri-dark),var(--card2));border-radius:12px;margin:14px 16px;padding:28px 20px;text-align:center;animation:fadeIn .5s}
-.sc-ring{width:116px;height:116px;border-radius:50%;margin:0 auto 16px;position:relative;display:flex;align-items:center;justify-content:center}
-.sc-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
-.sc-inner{position:relative;text-align:center}
-.sc-num{font-size:28px;font-weight:800;color:var(--acc)}
-.sc-den{font-size:12px;color:var(--dim)}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 16px}
-.stat{background:var(--card2);border-radius:9px;padding:14px;text-align:center;animation:fadeIn .4s both}
-.stat-v{font-size:22px;font-weight:800;color:var(--acc)}
-.stat-l{font-size:11px;color:var(--dim);margin-top:3px}
-.rev-item{padding:12px 0;border-bottom:1px solid var(--brd)}
-.rev-item:last-child{border:none}
-.rev-q{font-size:14px;margin-bottom:7px;font-weight:500}
-.hero-badge{display:inline-block;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;margin-top:8px}
-.hb-gold{background:rgba(249,168,37,.2);color:#f9a825;border:1px solid #f9a825}
-.hb-silver{background:rgba(144,164,174,.2);color:#90a4ae;border:1px solid #90a4ae}
-.hb-pass{background:rgba(76,175,80,.2);color:#4caf50;border:1px solid #4caf50}
-.hb-fail{background:rgba(244,67,54,.2);color:#f44336;border:1px solid #f44336}
+/* ============ Buttons ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:12px;font-weight:600;font-size:.95rem;letter-spacing:.01em;border:1px solid transparent;transition:transform .15s ease,box-shadow .2s ease,background .2s ease;position:relative;overflow:hidden}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:linear-gradient(135deg,#a259ff,#7c3aed);color:#fff;box-shadow:0 8px 24px -8px rgba(162,89,255,.55)}
+.btn-primary:hover{box-shadow:0 12px 32px -8px rgba(162,89,255,.7)}
+.btn-green{background:linear-gradient(135deg,#22c55e,#16a34a);color:#052e16;box-shadow:0 8px 24px -8px rgba(34,197,94,.5)}
+.btn-ghost{background:var(--surface-2);color:var(--text);border-color:var(--border)}
+.btn-ghost:hover{background:rgba(255,255,255,.1)}
+.btn-danger{background:rgba(248,113,113,.14);color:#fecaca;border-color:rgba(248,113,113,.3)}
+.btn-danger:hover{background:rgba(248,113,113,.22)}
+.btn-sm{padding:8px 14px;font-size:.85rem;border-radius:10px}
+.btn-icon{padding:10px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-dim);display:inline-flex;align-items:center;justify-content:center}
+.btn-icon:hover{background:rgba(255,255,255,.09);color:var(--text)}
+.btn-icon svg{width:20px;height:20px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
 
-/* ── LEADERBOARD ── */
-.lb-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--brd)}
-.lb-row:last-child{border:none}
-.rnk{min-width:30px;height:30px;border-radius:50%;background:var(--brd);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
-.rnk.g{background:#f9a825;color:#000}.rnk.s{background:#90a4ae;color:#000}.rnk.b{background:#bf8650;color:#fff}
-.lb-name{flex:1;font-size:14px;font-weight:600}
-.lb-score{font-size:18px;font-weight:800;color:var(--acc);text-align:right}
-.lb-time{font-size:11px;color:var(--dim);text-align:right}
-.lb-sel{display:flex;gap:8px;margin:12px 16px 0;flex-wrap:wrap}
-.lb-sel-btn{padding:7px 14px;border-radius:20px;border:1.5px solid var(--brd);background:var(--card2);color:var(--dim);font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
-.lb-sel-btn.active{border-color:var(--acc);color:var(--acc);background:rgba(255,111,0,.08)}
+/* Ripple */
+.btn::after{content:"";position:absolute;inset:auto;width:0;height:0;border-radius:50%;background:rgba(255,255,255,.35);transform:translate(-50%,-50%);pointer-events:none;transition:width .4s ease,height .4s ease,opacity .5s ease;opacity:0;top:var(--y,50%);left:var(--x,50%)}
+.btn.ripple::after{width:400px;height:400px;opacity:.4;transition:none}
 
-/* ── OLD TEST / RESUME ── */
-.old-test-item{background:var(--card2);border-radius:10px;padding:16px;margin:0 16px 10px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1.5px solid var(--brd);transition:.2s;animation:fadeIn .3s both}
-.old-test-item:hover{border-color:var(--pri);transform:translateY(-1px)}
-.old-test-item.done{border-color:rgba(76,175,80,.4)}
-.oti-icon{font-size:28px;flex-shrink:0}.oti-info{flex:1}
-.oti-title{font-size:14px;font-weight:700}
-.oti-sub{font-size:11px;color:var(--dim);margin-top:3px}
-.oti-badge{font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;flex-shrink:0}
-.oti-done{background:rgba(76,175,80,.15);color:#4caf50;border:1px solid #4caf50}
-.oti-new{background:rgba(255,111,0,.15);color:var(--acc);border:1px solid var(--acc)}
-.resume-banner{background:linear-gradient(135deg,rgba(255,111,0,.15),rgba(255,160,0,.08));border:1.5px solid var(--acc);border-radius:10px;padding:14px 16px;margin:14px 16px 0;display:flex;align-items:center;gap:12px;animation:fadeIn .4s}
-.rb-icon{font-size:28px;flex-shrink:0}.rb-info{flex:1}
-.rb-title{font-size:14px;font-weight:700;color:var(--acc)}
-.rb-sub{font-size:12px;color:var(--dim);margin-top:2px}
-.no-test{text-align:center;padding:32px 20px}
-.no-test .ico{font-size:48px;margin-bottom:12px}
-.logout-btn{background:none;border:none;color:#ef9a9a;cursor:pointer;font-size:12px;padding:4px 8px}
-/* Shimmer skeleton */
-.skel{background:linear-gradient(90deg,var(--card2) 25%,var(--brd) 50%,var(--card2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:10px;height:140px;margin:14px 16px}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+/* ============ Inputs ============ */
+.field{display:flex;flex-direction:column;gap:6px}
+.label{font-size:.8rem;color:var(--text-dim);font-weight:500;letter-spacing:.02em;text-transform:uppercase}
+.input,.select,.textarea{width:100%;padding:12px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;color:var(--text);transition:border-color .2s ease,background .2s ease}
+.input:focus,.select:focus,.textarea:focus{border-color:var(--purple);background:rgba(255,255,255,.06)}
+.textarea{min-height:100px;resize:vertical;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.85rem}
+.select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23a89ec7' d='M6 8L0 0h12z'/></svg>");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+
+/* ============ Badges & Chips ============ */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.72rem;font-weight:600;letter-spacing:.03em;text-transform:uppercase;background:var(--surface-2);border:1px solid var(--border)}
+.badge.purple{background:rgba(162,89,255,.15);color:#d4b8ff;border-color:rgba(162,89,255,.3)}
+.badge.green{background:rgba(34,197,94,.15);color:#86efac;border-color:rgba(34,197,94,.3)}
+.badge.red{background:rgba(248,113,113,.14);color:#fecaca;border-color:rgba(248,113,113,.3)}
+.badge.amber{background:rgba(251,191,36,.14);color:#fde68a;border-color:rgba(251,191,36,.3)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);cursor:pointer;font-size:.85rem;transition:all .15s ease}
+.chip.active{background:linear-gradient(135deg,rgba(162,89,255,.25),rgba(124,58,237,.15));border-color:var(--purple);color:#fff}
+.chip:hover{border-color:var(--border-strong)}
+
+/* ============ Auth screens ============ */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.auth-card{width:100%;max-width:440px;padding:36px 32px}
+.brand{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:28px}
+.brand-mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#a259ff,#22c55e);display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;color:#fff;font-size:1.3rem;box-shadow:0 8px 24px -8px rgba(162,89,255,.5)}
+.brand-name{font-family:'Space Grotesk';font-weight:700;font-size:1.4rem}
+.brand-name span{background:linear-gradient(90deg,#a259ff,#22c55e);-webkit-background-clip:text;background-clip:text;color:transparent}
+.auth-tabs{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.04);border-radius:12px;margin-bottom:24px}
+.auth-tab{flex:1;padding:10px;border-radius:9px;font-size:.9rem;color:var(--text-dim);transition:all .2s ease}
+.auth-tab.active{background:rgba(162,89,255,.2);color:#fff;box-shadow:inset 0 0 0 1px rgba(162,89,255,.4)}
+.form-grid{display:flex;flex-direction:column;gap:14px}
+.form-grid .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.form-grid .row{grid-template-columns:1fr}}
+.admin-trigger{position:fixed;top:16px;right:16px;z-index:10;width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid var(--border);display:grid;place-items:center;color:var(--text-dim);opacity:.7;transition:all .2s ease}
+.admin-trigger:hover{opacity:1;color:var(--purple)}
+
+/* ============ App Header ============ */
+.appbar{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(10,6,22,.92),rgba(10,6,22,.7));backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.appbar-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;max-width:1180px;margin:0 auto}
+.user-tag{display:flex;align-items:center;gap:10px}
+.avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a259ff,#22c55e);display:grid;place-items:center;color:#fff;font-family:'Space Grotesk';font-weight:600;font-size:.9rem}
+.user-info{line-height:1.15}
+.user-info b{font-family:'Space Grotesk';font-weight:600}
+.user-info small{color:var(--text-dim);font-size:.7rem}
+
+/* ============ Bottom Nav ============ */
+.bottom-nav{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:6px;padding:8px;border-radius:22px;background:rgba(20,10,42,.85);backdrop-filter:blur(20px);border:1px solid var(--border-strong);box-shadow:0 20px 60px -20px rgba(0,0,0,.7)}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 18px;border-radius:14px;color:var(--text-dim);font-size:.7rem;font-weight:500;transition:all .2s ease;min-width:70px}
+.nav-btn svg{width:22px;height:22px}
+.nav-btn.active{background:linear-gradient(135deg,#a259ff,#7c3aed);color:#fff;box-shadow:0 4px 16px -4px rgba(162,89,255,.6)}
+
+/* ============ Hero Banner ============ */
+.hero-banner{position:relative;overflow:hidden;border-radius:var(--radius-lg);margin-bottom:24px;background:linear-gradient(135deg,#0f0527 0%,#1a0a3a 40%,#0d1f12 100%);border:1px solid rgba(162,89,255,.25);min-height:200px;display:flex;align-items:center}
+.hero-banner::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(162,89,255,.35) 0%,transparent 60%),radial-gradient(ellipse at 80% 30%,rgba(34,197,94,.2) 0%,transparent 55%);pointer-events:none}
+.hero-banner::after{content:"";position:absolute;top:-40px;right:-40px;width:320px;height:320px;border-radius:50%;background:radial-gradient(closest-side,rgba(162,89,255,.18),transparent);pointer-events:none}
+.hero-content{position:relative;z-index:1;padding:32px 28px;flex:1}
+.hero-eyebrow{display:flex;align-items:center;gap:8px;font-size:.72rem;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.hero-eyebrow span{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;background:rgba(162,89,255,.18);border:1px solid rgba(162,89,255,.35)}
+.hero-title{font-family:"Space Grotesk",sans-serif;font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:800;line-height:1.1;color:#fff;margin-bottom:10px}
+.hero-title .grad{background:linear-gradient(90deg,#a259ff,#4ade80);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-subtitle{color:#a89ec7;font-size:.95rem;line-height:1.5;max-width:480px;margin-bottom:18px}
+.hero-pills{display:flex;flex-wrap:wrap;gap:8px}
+.hero-pill{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:.78rem;color:#c4b5fd;font-weight:500}
+.hero-deco{position:absolute;right:0;top:0;bottom:0;width:320px;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden}
+.hero-molecule{position:relative;width:240px;height:240px;opacity:.55}
+.hero-molecule svg{width:100%;height:100%}
+@media(max-width:700px){.hero-deco{display:none}.hero-content{padding:24px 20px}}
+/* ============ Home Feed ============ */
+.banner{position:relative;overflow:hidden;border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;background:linear-gradient(135deg,rgba(162,89,255,.25),rgba(34,197,94,.15));border:1px solid rgba(162,89,255,.3)}
+.banner-eyebrow{font-size:.75rem;font-weight:600;color:#d4b8ff;text-transform:uppercase;letter-spacing:.08em}
+.banner-title{font-family:'Space Grotesk';font-weight:700;font-size:1.6rem;margin-top:6px;line-height:1.15}
+.banner-desc{color:var(--text-dim);margin-top:8px;font-size:.95rem}
+.banner-img{position:absolute;right:-30px;top:-30px;width:220px;opacity:.9;pointer-events:none}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin:24px 0 12px}
+.section-header h2{font-family:'Space Grotesk';font-size:1.15rem;font-weight:600}
+.feed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.feed-item{padding:16px;display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:transform .2s ease}
+.feed-item:hover{transform:translateY(-3px)}
+.feed-icon{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:1.1rem}
+.feed-icon.yt{background:rgba(248,113,113,.18);color:#fca5a5}
+.feed-icon.pdf{background:rgba(96,165,250,.18);color:#93c5fd}
+.feed-icon.ann{background:rgba(251,191,36,.18);color:#fde68a}
+
+/* ============ Test List ============ */
+.test-row{display:flex;align-items:center;justify-content:space-between;padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);margin-bottom:10px}
+.test-row .meta{display:flex;flex-direction:column;gap:4px}
+.test-row .meta b{font-family:'Space Grotesk';font-weight:600}
+.test-row .meta small{color:var(--text-dim);font-size:.78rem}
+.today-card{background:linear-gradient(135deg,rgba(34,197,94,.18),rgba(162,89,255,.12));border-color:rgba(34,197,94,.4);padding:22px;margin-bottom:20px}
+.today-card .badge.green{margin-bottom:10px}
+.today-card h3{font-size:1.3rem;margin-bottom:6px}
+
+/* ============ Quiz ============ */
+.quiz-wrap{max-width:820px;margin:0 auto;padding:20px}
+.quiz-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.timer{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;background:rgba(251,191,36,.14);border:1px solid rgba(251,191,36,.3);color:#fde68a;font-family:'JetBrains Mono';font-weight:600;font-size:1rem}
+.timer.warn{background:rgba(248,113,113,.14);border-color:rgba(248,113,113,.4);color:#fecaca;animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.7}}
+.q-card{padding:24px}
+.q-num{font-size:.8rem;color:var(--text-dim);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px}
+.q-text{font-family:'Space Grotesk';font-weight:600;font-size:1.15rem;line-height:1.4;margin-bottom:6px}
+.q-text-hi{color:var(--text-dim);font-size:1rem;margin-bottom:20px;line-height:1.4}
+.option{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--border);margin-bottom:10px;cursor:pointer;transition:all .15s ease}
+.option:hover{border-color:var(--border-strong);background:rgba(255,255,255,.05)}
+.option.selected{border-color:var(--purple);background:rgba(162,89,255,.14)}
+.option .letter{width:28px;height:28px;flex-shrink:0;border-radius:8px;background:rgba(255,255,255,.06);display:grid;place-items:center;font-weight:600;font-size:.85rem}
+.option.selected .letter{background:var(--purple);color:#fff}
+.option .txt{line-height:1.4}
+.option .txt-hi{color:var(--text-dim);font-size:.9rem;margin-top:4px}
+.quiz-controls{display:flex;justify-content:space-between;gap:12px;margin-top:20px}
+.palette{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;padding:14px;border-radius:14px;background:var(--surface);border:1px solid var(--border)}
+.pal-btn{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.05);border:1px solid var(--border);font-family:'JetBrains Mono';font-size:.8rem;font-weight:600;color:var(--text-dim);transition:all .15s ease}
+.pal-btn.answered{background:rgba(34,197,94,.2);border-color:rgba(34,197,94,.4);color:#86efac}
+.pal-btn.current{outline:2px solid var(--purple);color:#fff}
+
+/* ============ Result ============ */
+.result-hero{text-align:center;padding:32px 20px}
+.grade-circle{width:140px;height:140px;border-radius:50%;margin:0 auto 18px;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:3rem;background:conic-gradient(from -90deg,var(--purple) var(--pct,0%),rgba(255,255,255,.06) 0);position:relative}
+.grade-circle::before{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--bg-2)}
+.grade-circle span{position:relative}
+.result-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:20px 0}
+.stat-tile{padding:14px;text-align:center;border-radius:12px;background:var(--surface);border:1px solid var(--border)}
+.stat-tile b{font-family:'Space Grotesk';font-size:1.4rem;font-weight:700;display:block}
+.stat-tile small{color:var(--text-dim);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}
+.review-item{padding:16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);margin-bottom:10px}
+.review-item.correct{border-left:3px solid var(--green)}
+.review-item.wrong{border-left:3px solid var(--red)}
+.review-q{font-weight:600;margin-bottom:8px}
+.review-opt{padding:8px 12px;border-radius:8px;margin-top:6px;font-size:.9rem;background:rgba(255,255,255,.03)}
+.review-opt.your{background:rgba(248,113,113,.14);color:#fecaca}
+.review-opt.correct{background:rgba(34,197,94,.14);color:#86efac}
+
+/* ============ Doubt Box ============ */
+.doubt-item{padding:16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);margin-bottom:12px}
+.doubt-item .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px}
+.doubt-item .q{margin-bottom:8px}
+.doubt-item .reply{padding:12px;border-radius:10px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);margin-top:8px}
+
+/* ============ Toast ============ */
+.toast-wrap{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:100;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:12px 18px;border-radius:12px;background:rgba(20,10,42,.95);backdrop-filter:blur(12px);border:1px solid var(--border-strong);color:#fff;font-size:.9rem;pointer-events:auto;min-width:240px;box-shadow:0 20px 60px -20px rgba(0,0,0,.7);animation:tin .3s ease}
+.toast.success{border-color:rgba(34,197,94,.4);background:rgba(15,40,25,.95)}
+.toast.error{border-color:rgba(248,113,113,.4);background:rgba(40,15,20,.95)}
+@keyframes tin{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ============ Loading ============ */
+.loading-full{position:fixed;inset:0;background:rgba(10,6,22,.85);z-index:200;display:grid;place-items:center;backdrop-filter:blur(6px)}
+.skeleton{background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.08),rgba(255,255,255,.04));background-size:200% 100%;animation:sk 1.4s infinite;border-radius:8px}
+@keyframes sk{to{background-position:-200% 0}}
+
+/* ============ Empty state ============ */
+.empty{text-align:center;padding:36px 20px;color:var(--text-dim)}
+.empty .lot{width:180px;margin:0 auto 12px}
+
+/* ============ Modal ============ */
+.modal-back{position:fixed;inset:0;background:rgba(10,6,22,.7);backdrop-filter:blur(6px);z-index:60;display:grid;place-items:center;padding:20px}
+.modal{max-width:640px;width:100%;max-height:90vh;overflow-y:auto;padding:26px;background:linear-gradient(180deg,#1a0e3a,#110828);border:1px solid var(--border-strong);border-radius:var(--radius-lg)}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.modal-head h3{font-family:'Space Grotesk';font-size:1.2rem}
+
+/* ============ Question Builder ============ */
+.qb-wrap{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px}
+.qb-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--border);font-size:.85rem;font-weight:600}
+.qb-body{padding:14px;display:flex;flex-direction:column;gap:10px}
+.qb-option-row{display:flex;align-items:center;gap:8px}
+.qb-option-row .letter{width:28px;height:28px;flex-shrink:0;border-radius:8px;background:rgba(255,255,255,.06);display:grid;place-items:center;font-weight:600;font-size:.8rem;color:var(--text-dim)}
+.qb-option-row input{flex:1}
+.qb-option-row .correct-radio{width:18px;height:18px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
+.qb-correct-label{font-size:.72rem;color:var(--green);font-weight:600}
+.qb-add-q{width:100%;padding:10px;border-radius:10px;border:1px dashed var(--border-strong);color:var(--text-dim);font-size:.85rem;background:transparent;transition:all .2s ease}
+.qb-add-q:hover{border-color:var(--purple);color:#fff;background:rgba(162,89,255,.08)}
+.json-preview{padding:10px 14px;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid var(--border);font-family:"JetBrains Mono",monospace;font-size:.75rem;color:#86efac;max-height:200px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+/* ============ Admin ============ */
+.admin-shell{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+@media (max-width:900px){.admin-shell{grid-template-columns:1fr}}
+.admin-side{background:linear-gradient(180deg,#140830,#0a0616);border-right:1px solid var(--border);padding:20px 12px;position:sticky;top:0;height:100vh;overflow-y:auto}
+@media (max-width:900px){.admin-side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border)}}
+.admin-nav-btn{width:100%;display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;color:var(--text-dim);font-size:.9rem;font-weight:500;margin-bottom:4px;text-align:left;transition:all .15s ease}
+.admin-nav-btn:hover{background:rgba(255,255,255,.05);color:#fff}
+.admin-nav-btn.active{background:linear-gradient(135deg,rgba(162,89,255,.2),rgba(124,58,237,.1));color:#fff;border:1px solid rgba(162,89,255,.3)}
+.admin-main{padding:28px 26px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.stat-card b{font-family:'Space Grotesk';font-size:1.9rem;font-weight:700;display:block}
+.stat-card small{color:var(--text-dim);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em}
+.stat-card .icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;margin-bottom:10px;font-size:1rem}
+.data-table{width:100%;border-collapse:separate;border-spacing:0;font-size:.88rem}
+.data-table th{text-align:left;padding:12px 14px;background:var(--surface);color:var(--text-dim);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600;border-bottom:1px solid var(--border)}
+.data-table td{padding:12px 14px;border-bottom:1px solid var(--border)}
+.data-table tr:hover td{background:rgba(255,255,255,.02)}
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+.toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.toolbar .input,.toolbar .select{flex:0 1 220px}
+.spacer{flex:1}
 </style>
 </head>
 <body>
-
-<!-- LOADER OVERLAY -->
-<div id="loaderOverlay">
-  <div class="lo-ring"></div>
-  <div class="lo-msg" id="loaderMsg">Please Wait<span class="lo-dots"></span></div>
-</div>
-
-<!-- SUBMIT OVERLAY -->
-<div id="submitOverlay">
-  <div class="so-ring"></div>
-  <div class="so-title">Submitting Your Test</div>
-  <div class="so-sub">Please don't close the app</div>
-  <div class="so-steps">
-    <div class="so-step active" id="step1"><div class="so-dot"></div>Calculating your score</div>
-    <div class="so-step" id="step2"><div class="so-dot"></div>Saving to leaderboard</div>
-    <div class="so-step" id="step3"><div class="so-dot"></div>Fetching your rank</div>
-  </div>
-</div>
-
-<!-- AUTH SCREEN -->
-<div id="authScreen" class="screen active">
-  <div class="hdr">
-    <div><small>ChemVeda Classes</small><h1>🏆 ChemVeda Pro: 2026-27</h1></div>
-    <span style="font-size:38px">📚</span>
-  </div>
-  <div style="background:linear-gradient(135deg,var(--pri-dark),var(--card));margin:16px;border-radius:12px;padding:20px;text-align:center">
-    <p style="color:#90caf9;font-size:14px;line-height:1.9">📅 Daily Tests &nbsp;·&nbsp; 🏆 Live Leaderboard<br>📊 Track Progress &nbsp;·&nbsp; 🎯 CBSE / SSC</p>
-  </div>
-  <div class="tabs">
-    <div class="tab active" id="tabLogin" onclick="authTab('login')">Login</div>
-    <div class="tab" id="tabReg" onclick="authTab('reg')">Register</div>
-  </div>
-  <div id="fLogin">
-    <div class="card">
-      <label>User Name</label>
-      <input class="inp" id="lgRoll" type="text" placeholder="Enter your username" autocomplete="username">
-      <label>Password</label>
-      <input class="inp" id="lgPass" type="password" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-      <div class="alert" id="lgAlert"></div>
-      <button class="btn btn-pri" id="btnLogin" onclick="doLogin()">Login →</button>
-    </div>
-  </div>
-  <div id="fReg" style="display:none">
-    <div class="card">
-      <label>Full Name</label>
-      <input class="inp" id="rgName" type="text" placeholder="Your full name">
-      <label>User Name</label>
-      <input class="inp" id="rgRoll" type="text" placeholder="Choose a unique username">
-      <label>Password</label>
-      <input class="inp" id="rgPass" type="password" placeholder="Create a password">
-      <label>Your Class / Category</label>
-      <input class="inp" id="rgClass" type="text" placeholder="e.g. Class 10 / SSC / UPSC">
-      <div class="alert" id="rgAlert"></div>
-      <button class="btn btn-acc" id="btnRegister" onclick="doRegister()">Register →</button>
-    </div>
-  </div>
-</div>
-
-<!-- HOME SCREEN -->
-<div id="homeScreen" class="screen">
-  <div class="hdr">
-    <div><small>Student Portal</small><h1 id="hdrName">Welcome!</h1></div>
-    <button class="logout-btn" onclick="doLogout()">Logout</button>
-  </div>
-  <div class="tabs">
-    <div class="tab active" id="tabToday" onclick="homeTab('today')">📅 Today</div>
-    <div class="tab" id="tabOld"          onclick="homeTab('old')">📂 Yesterday</div>
-    <div class="tab" id="tabLb"           onclick="homeTab('lb')">🏆 Leaderboard [Rank]</div>
-  </div>
-  <div id="hToday">
-    <div id="resumeBanner" style="display:none">
-      <div class="resume-banner">
-        <div class="rb-icon">⏳</div>
-        <div class="rb-info">
-          <div class="rb-title">Test In Progress!</div>
-          <div class="rb-sub" id="resumeSubtitle">Ongoing test detected</div>
-        </div>
-        <button class="btn btn-acc btn-sm" onclick="resumeQuiz()">Resume →</button>
-      </div>
-    </div>
-    <div id="testCard"></div>
-  </div>
-  <div id="hOld" style="display:none"><div id="oldTestsData"></div></div>
-  <div id="hLb" style="display:none">
-    <div class="lb-sel" id="lbSelector"></div>
-    <div id="lbData"></div>
-  </div>
-</div>
-
-<!-- QUIZ SCREEN -->
-<div id="quizScreen" class="screen">
-  <div class="hdr">
-    <div><small id="qSubject">ChemVeda Test Series</small><h1 id="qTitle">Daily Test</h1></div>
-    <div class="timer-wrap"><div class="timer" id="timerEl">10:00</div></div>
-  </div>
-  <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:10%"></div></div>
-  <div class="card">
-    <div class="q-num" id="qNum">Question 1 of 10</div>
-    <div class="q-txt" id="qTxt">Loading...</div>
-    <div id="opts"></div>
-  </div>
-  <div class="nav-row">
-    <button class="btn btn-out" id="btnPrev" onclick="goQ(-1)">← Prev</button>
-    <button class="btn btn-pri" id="btnNext" onclick="goQ(1)">Next →</button>
-    <button class="btn btn-acc" id="btnSub" onclick="confirmSub()" style="display:none">Submit ✓</button>
-  </div>
-</div>
-
-<!-- RESULT SCREEN -->
-<div id="resultScreen" class="screen">
-  <div class="hdr"><div><small>ChemVeda Classes</small><h1>Your Result 🎯</h1></div></div>
-  <div id="resHero"></div>
-  <div class="stats-grid">
-    <div class="stat" style="animation-delay:.05s"><div class="stat-v" id="rsC" style="color:#4caf50">-</div><div class="stat-l">✅ Correct</div></div>
-    <div class="stat" style="animation-delay:.1s"><div class="stat-v" id="rsW" style="color:#f44336">-</div><div class="stat-l">❌ Wrong</div></div>
-    <div class="stat" style="animation-delay:.15s"><div class="stat-v" id="rsRank" style="color:#f9a825">-</div><div class="stat-l">🏆 Your Rank</div></div>
-    <div class="stat" style="animation-delay:.2s"><div class="stat-v" id="rsTime">-</div><div class="stat-l">⏱ Time Taken</div></div>
-  </div>
-  <div class="card">
-    <h3 style="margin-bottom:16px;font-size:16px">📋 Answer Review</h3>
-    <div id="review"></div>
-  </div>
-  <div style="margin:16px"><button class="btn btn-pri" onclick="backHome()">← Back to Home</button></div>
-</div>
+<div class="grain"></div>
+<div id="app"></div>
+<div class="toast-wrap" id="toasts" data-testid="toast-region" aria-live="polite"></div>
 
 <script>
-const API='https://script.google.com/macros/s/AKfycbzgMTippVVVLNZHzyx2dqWIKo2qk9wotPTI2V0YoFIvKyOrg9jOeNSPUVG7Z-TmWhs/exec';
+/* ==============================================================
+   ChemVeda Pro 2026-27 — Client
+   ============================================================== */
 
-let student=null,test=null,curQ=0,ans=[],timerInt=null,timeLeft=0,tStart=null;
-let lbTests=[],activeLbTestId=null;
-const LS_STUDENT='qm_student',LS_QUIZ_STATE='qm_quiz_state',LS_SUBMITTED='qm_submitted';
+const API_URL = "https://script.google.com/macros/s/AKfycbz7NlW985iZJAx8yuf3VHCh-hoHDMRDiJKBGF-O7gSQiuKenAayB0J8GG58SQN5PWRu/exec";
 
-// ── LOADER ──────────────────────────────────────────────
-function showLoader(msg='Please Wait'){
-  document.getElementById('loaderMsg').innerHTML=msg+'<span class="lo-dots"></span>';
-  document.getElementById('loaderOverlay').classList.add('show');
-}
-function hideLoader(){document.getElementById('loaderOverlay').classList.remove('show');}
-function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+/* Lottie animation URLs (LottieFiles public CDN) */
+const LOTTIE = {
+  loading:    "https://assets6.lottiefiles.com/packages/lf20_usmfx6bp.json",
+  success:    "https://assets1.lottiefiles.com/packages/lf20_s2lryxtd.json",
+  celebrate:  "https://assets9.lottiefiles.com/packages/lf20_touohxv0.json",
+  empty:      "https://assets2.lottiefiles.com/packages/lf20_ydo1amjm.json",
+  quiz:       "https://assets7.lottiefiles.com/packages/lf20_kkflmtur.json",
+  book:       "https://assets10.lottiefiles.com/packages/lf20_kdx6cani.json",
+  chat:       "https://assets6.lottiefiles.com/packages/lf20_gjmecwii.json",
+  saved:      "https://assets2.lottiefiles.com/packages/lf20_lktqxa1n.json"
+};
 
-// ── SESSION ─────────────────────────────────────────────
-window.addEventListener('load',()=>{
-  try{const s=localStorage.getItem(LS_STUDENT);if(s){student=JSON.parse(s);restoreOrHome();return;}}catch(e){}
-  showS('authScreen');
-});
-function restoreOrHome(){
-  try{
-    const qs=JSON.parse(localStorage.getItem(LS_QUIZ_STATE)||'null');
-    if(qs&&qs.rollNo===student.rollNo){
-      test=qs.test;ans=qs.ans;curQ=qs.curQ;
-      tStart=Date.now()-(qs.elapsed*1000);
-      timeLeft=Math.max(0,qs.timeLeft);
-      loadHome(true);return;
-    }
-  }catch(e){}
-  loadHome(false);
-}
+/* --------------- State --------------- */
+const state = {
+  route: "auth",       // auth | app | admin-auth | admin
+  student: null,
+  admin: null,
+  tab: "home",         // home | tests | doubts
+  adminTab: "dashboard",
+  quiz: null,          // {test, answers, cursor, startedAt}
+  toasts: [],
+  cache: {}
+};
 
-// ── AUTH ────────────────────────────────────────────────
-function authTab(t){
-  document.getElementById('tabLogin').classList.toggle('active',t==='login');
-  document.getElementById('tabReg').classList.toggle('active',t==='reg');
-  document.getElementById('fLogin').style.display=t==='login'?'block':'none';
-  document.getElementById('fReg').style.display=t==='reg'?'block':'none';
-}
-async function doLogin(){
-  const roll=v('lgRoll'),pass=v('lgPass');
-  if(!roll||!pass)return alert2('lgAlert','Please fill in all fields','err');
-  setBtnLoad('btnLogin',true,'Logging in...');
-  showLoader('Verifying credentials');
-  try{
-    const r=await fetch(`${API}?action=loginStudent&rollNo=${enc(roll)}&password=${enc(pass)}`);
-    const d=await r.json();
-    hideLoader();
-    if(d.success){student=d.student;localStorage.setItem(LS_STUDENT,JSON.stringify(student));restoreOrHome();}
-    else alert2('lgAlert',d.message||'Invalid credentials. Try again.','err');
-  }catch(e){hideLoader();alert2('lgAlert','Connection failed. Check your internet.','err');}
-  setBtnLoad('btnLogin',false,'Login →');
-}
-async function doRegister(){
-  const name=v('rgName'),roll=v('rgRoll'),pass=v('rgPass'),cls=v('rgClass');
-  if(!name||!roll||!pass||!cls)return alert2('rgAlert','Please fill in all fields','err');
-  setBtnLoad('btnRegister',true,'Registering...');
-  showLoader('Creating your account');
-  try{
-    const fd=new FormData();
-    fd.append('action','registerStudent');fd.append('name',name);
-    fd.append('rollNo',roll);fd.append('password',pass);fd.append('class',cls);
-    await fetch(API,{method:'POST',body:fd,mode:'no-cors'});
-    hideLoader();
-    alert2('rgAlert','✅ Registration successful! Please login.','ok');
-    setTimeout(()=>authTab('login'),1800);
-  }catch(e){hideLoader();alert2('rgAlert','Something went wrong. Try again.','err');}
-  setBtnLoad('btnRegister',false,'Register →');
-}
-function doLogout(){
-  clearInterval(timerInt);student=null;test=null;
-  localStorage.removeItem(LS_STUDENT);localStorage.removeItem(LS_QUIZ_STATE);
-  showS('authScreen');
-}
+/* --------------- Storage --------------- */
+const store = {
+  get: (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch(_){ return null; } },
+  set: (k,v) => localStorage.setItem(k, JSON.stringify(v)),
+  del: (k) => localStorage.removeItem(k)
+};
 
-// ── HOME ────────────────────────────────────────────────
-async function loadHome(hasResume=false){
-  document.getElementById('hdrName').textContent=`Hi, ${student.name.split(' ')[0]}! 👋`;
-  showS('homeScreen');homeTab('today',hasResume);
-}
-function homeTab(t,hasResume=false){
-  ['today','old','lb'].forEach(x=>{
-    document.getElementById(x==='today'?'tabToday':x==='old'?'tabOld':'tabLb').classList.toggle('active',x===t);
-    document.getElementById(x==='today'?'hToday':x==='old'?'hOld':'hLb').style.display=x===t?'block':'none';
+/* --------------- API --------------- */
+async function api(action, data = {}) {
+  const body = JSON.stringify(Object.assign({ action }, data));
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoid preflight
+    body
   });
-  if(t==='today')loadTodayTab(hasResume);
-  if(t==='old')loadYesterdayTab();
-  if(t==='lb')loadLbTab();
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || "API error");
+  return json;
 }
 
-// ── SUBMITTED HELPERS ───────────────────────────────────
-function hasSubmitted(id){try{return JSON.parse(localStorage.getItem(LS_SUBMITTED)||'[]').includes(String(id));}catch(e){return false;}}
-function markSubmitted(id){
-  try{const a=JSON.parse(localStorage.getItem(LS_SUBMITTED)||'[]');if(!a.includes(String(id)))a.push(String(id));localStorage.setItem(LS_SUBMITTED,JSON.stringify(a));}catch(e){}
+/* --------------- Toast --------------- */
+function toast(msg, kind = "") {
+  const wrap = document.getElementById("toasts");
+  const el = document.createElement("div");
+  el.className = "toast " + (kind || "");
+  el.textContent = msg;
+  el.setAttribute("data-testid", "toast");
+  wrap.appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; el.style.transform = "translateY(-10px)"; el.style.transition="opacity .3s, transform .3s"; }, 2400);
+  setTimeout(() => el.remove(), 2800);
 }
 
-// ── TODAY TAB ───────────────────────────────────────────
-async function loadTodayTab(hasResume=false){
-  const banner=document.getElementById('resumeBanner');
-  if(hasResume&&test){
-    document.getElementById('resumeSubtitle').textContent=`${test.title} · ${fmtT(timeLeft)} remaining`;
-    banner.style.display='block';
-  }else banner.style.display='none';
-  document.getElementById('testCard').innerHTML='<div class="skel"></div>';
-  try{
-    const fmts=todayFmts();let d=null;
-    for(const fmt of[fmts.iso,fmts.dmy,fmts.mdy]){
-      const r=await fetch(`${API}?action=getTest&date=${enc(fmt)}`);
-      const res=await r.json();if(res.success){d=res;break;}
-    }
-    if(d&&d.success){
-      if(!hasResume)test=d.test;
-      const sub=hasSubmitted(d.test.id),inProg=hasResume&&test&&test.id===d.test.id;
-      let btn=sub
-        ?`<button class="btn btn-done" disabled>✅ Test Submitted</button><button class="btn btn-pri" style="margin-top:10px" onclick="viewMyResult('${d.test.id}')">📊 View My Result & Rank →</button>`
-        :inProg
-        ?`<button class="btn btn-acc" onclick="resumeQuiz()">⏳ Resume Ongoing Test →</button>`
-        :`<button class="btn btn-acc" onclick="startQuiz()">▶ Start Test Now</button>`;
-      document.getElementById('testCard').innerHTML=`
-      <div class="card" style="background:linear-gradient(135deg,var(--pri-dark),var(--card2));border-left:4px solid var(--acc);margin-top:14px;animation:fadeIn .4s">
-        <div style="font-size:10px;color:#90caf9;letter-spacing:2px;margin-bottom:8px;font-weight:700">📅 TODAY'S TEST</div>
-        <h2 style="font-size:18px;margin-bottom:6px">${d.test.title}</h2>
-        <p style="color:#90caf9;font-size:13px;margin-bottom:16px">📘 ${d.test.subject} &nbsp;·&nbsp; ⏱ ${d.test.timer} min &nbsp;·&nbsp; ❓ ${d.test.questions.length} Qs</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
-          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--acc)">${d.test.questions.length}</div><div style="font-size:11px;color:#90caf9">Questions</div></div>
-          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--acc)">${d.test.timer}</div><div style="font-size:11px;color:#90caf9">Minutes</div></div>
-          <div style="background:rgba(0,0,0,.3);padding:10px;border-radius:8px;text-align:center"><div style="font-size:20px;font-weight:800;color:${sub?'#4caf50':inProg?'var(--acc2)':'#4caf50'}">${sub?'DONE':inProg?'IN PROG':'LIVE'}</div><div style="font-size:11px;color:#90caf9">Status</div></div>
-        </div>${btn}</div>`;
-    }else{
-      document.getElementById('testCard').innerHTML=`<div class="card" style="animation:fadeIn .4s"><div class="no-test"><div class="ico">📭</div><h3>No Test Today</h3><p style="color:var(--dim);font-size:14px;margin-top:8px">Admin will post today's test soon.<br>Please check back!</p></div></div>`;
-    }
-  }catch(e){document.getElementById('testCard').innerHTML=`<div class="card" style="border-left:4px solid #f44336"><p style="color:#f44336;font-weight:600">⚠️ Could not load test</p><p style="color:var(--dim);font-size:13px;margin-top:6px">Check your internet and try again.</p><button class="btn btn-out" style="margin-top:12px" onclick="loadTodayTab()">↺ Retry</button></div>`;}
+/* --------------- Lottie helper --------------- */
+function lottieMount(container, url, opts = {}) {
+  if (!container) return;
+  container.innerHTML = "";
+  try {
+    lottie.loadAnimation({
+      container, renderer: "svg", loop: opts.loop !== false, autoplay: true, path: url
+    });
+  } catch (e) { /* offline fallback */ }
 }
 
-// ── YESTERDAY TAB (1 day back) ──────────────────────────
-async function loadYesterdayTab(){
-  document.getElementById('oldTestsData').innerHTML='<div class="skel"></div>';
-  try{
-    const fmts=yesterdayFmts();let d=null;
-    for(const fmt of[fmts.iso,fmts.dmy,fmts.mdy]){
-      const r=await fetch(`${API}?action=getTest&date=${enc(fmt)}`);
-      const res=await r.json();if(res.success){d=res;break;}
-    }
-    if(d&&d.success){
-      const t=d.test,done=hasSubmitted(t.id);
-      document.getElementById('oldTestsData').innerHTML=`
-        <div style="margin:16px 16px 8px;display:flex;align-items:center;gap:8px">
-          <span style="font-size:16px">📂</span>
-          <span style="font-size:14px;font-weight:700;color:var(--dim)">Yesterday's Test</span>
-          <span style="font-size:11px;color:var(--dim)">${formatDate(t.date)}</span>
+/* --------------- Ripple --------------- */
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".btn");
+  if (!btn) return;
+  const r = btn.getBoundingClientRect();
+  btn.style.setProperty("--x", (e.clientX - r.left) + "px");
+  btn.style.setProperty("--y", (e.clientY - r.top) + "px");
+  btn.classList.remove("ripple"); void btn.offsetWidth; btn.classList.add("ripple");
+  setTimeout(() => btn.classList.remove("ripple"), 500);
+});
+
+/* --------------- Small DOM helpers --------------- */
+function h(html){ const d = document.createElement("div"); d.innerHTML = html.trim(); return d.firstElementChild; }
+function fmtDate(s){ if(!s) return ""; try{ return new Date(s).toLocaleString(undefined,{dateStyle:"medium",timeStyle:"short"});}catch(_){return s;} }
+function fmtDay(s){ if(!s) return ""; try{ return new Date(s).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});}catch(_){return s;}}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function icon(name){
+  const icons = {
+    home:'<path d="M3 11l9-8 9 8v10a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2z"/>',
+    test:'<path d="M9 2h6l1 2h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h4l1-2zm3 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>',
+    doubt:'<path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2z"/>',
+    logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+    settings:'<path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'
+  };
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icons[name]||""}</svg>`;
+}
+
+/* ==============================================================
+   ROOT RENDER
+   ============================================================== */
+function render() {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+  if (state.route === "auth") return renderAuth(app);
+  if (state.route === "admin-auth") return renderAdminAuth(app);
+  if (state.route === "app")   return renderStudentApp(app);
+  if (state.route === "admin") return renderAdmin(app);
+}
+
+/* ==============================================================
+   AUTH (Student)
+   ============================================================== */
+function renderAuth(root) {
+  const mode = state.authMode || "login";
+  root.innerHTML = `
+    <button class="admin-trigger" id="adminGear" title="Admin login" data-testid="admin-gear">${icon("settings")}</button>
+    <div class="auth-wrap">
+      <div class="auth-card glass">
+        <div class="brand">
+          <div class="brand-mark">CV</div>
+          <div class="brand-name">ChemVeda <span>Pro</span></div>
         </div>
-        <div class="old-test-item ${done?'done':''}" onclick="openOldTest('${t.id}')">
-          <div class="oti-icon">${done?'✅':'📝'}</div>
-          <div class="oti-info">
-            <div class="oti-title">${t.title}</div>
-            <div class="oti-sub">📘 ${t.subject} &nbsp;·&nbsp; ⏱ ${t.timer} min &nbsp;·&nbsp; ❓ ${t.questions.length} Questions</div>
-          </div>
-          <div class="oti-badge ${done?'oti-done':'oti-new'}">${done?'Done':'Attempt'}</div>
-        </div>`;
-    }else{
-      document.getElementById('oldTestsData').innerHTML=`<div class="card" style="animation:fadeIn .4s"><div class="no-test"><div class="ico">📂</div><h3>No Test Yesterday</h3><p style="color:var(--dim);font-size:13px;margin-top:8px">Yesterday's test is not available.</p></div></div>`;
-    }
-  }catch(e){document.getElementById('oldTestsData').innerHTML=`<div class="card" style="border-left:4px solid #f44336"><p style="color:#f44336">⚠️ Could not load</p><button class="btn btn-out" style="margin-top:12px" onclick="loadYesterdayTab()">↺ Retry</button></div>`;}
-}
+        <p class="muted" style="text-align:center;margin-bottom:24px;font-size:.9rem">Learn. Practice. Rise.</p>
 
-async function openOldTest(testId){
-  if(hasSubmitted(testId)){viewMyResult(testId);return;}
-  showLoader('Loading test');
-  try{
-    const r=await fetch(`${API}?action=getTestById&testId=${enc(testId)}`);
-    const d=await r.json();hideLoader();
-    if(d.success){test=d.test;startQuiz();}
-    else alert('Could not load test. Try again.');
-  }catch(e){hideLoader();alert('Could not load test. Check internet.');}
-}
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab ${mode==='login'?'active':''}" data-testid="tab-login" data-mode="login">Log in</button>
+          <button class="auth-tab ${mode==='register'?'active':''}" data-testid="tab-register" data-mode="register">Register</button>
+        </div>
 
-async function viewMyResult(testId){
-  showLoader('Loading your result');
-  try{
-    const r=await fetch(`${API}?action=getLeaderboard&testId=${enc(testId)}`);
-    const d=await r.json();
-    const tr=await fetch(`${API}?action=getTestById&testId=${enc(testId)}`);
-    const td=await tr.json();
-    hideLoader();
-    if(td.success)test=td.test;
-    if(d.success){
-      const me=d.leaderboard.find(s=>String(s.rollNo)===String(student.rollNo));
-      const pos=d.leaderboard.findIndex(s=>String(s.rollNo)===String(student.rollNo));
-      if(me)showResult(me.score,me.total,me.timeTaken,pos+1);
-      else alert('Your result was not found.');
-    }
-  }catch(e){hideLoader();alert('Could not load result. Try again.');}
-}
-
-// ── LEADERBOARD TAB ─────────────────────────────────────
-async function loadLbTab(){
-  document.getElementById('lbData').innerHTML='<div class="skel" style="height:200px"></div>';
-  document.getElementById('lbSelector').innerHTML='';
-  showLoader('Loading leaderboard');
-  try{
-    const r=await fetch(`${API}?action=getLast7Tests`);
-    const d=await r.json();hideLoader();
-    if(!d.success||d.tests.length===0){document.getElementById('lbData').innerHTML='<div class="card"><p style="text-align:center;color:var(--dim);padding:20px">No tests available yet.</p></div>';return;}
-    lbTests=d.tests;activeLbTestId=lbTests[0].id;
-    buildLbSelector();loadLb(activeLbTestId);
-  }catch(e){hideLoader();document.getElementById('lbData').innerHTML='<div class="card" style="color:#f44336">⚠️ Could not load leaderboard.</div>';}
-}
-function buildLbSelector(){
-  document.getElementById('lbSelector').innerHTML=lbTests.map(t=>`<button class="lb-sel-btn ${t.id===activeLbTestId?'active':''}" onclick="switchLb('${t.id}')">${formatDate(t.date)}</button>`).join('');
-}
-function switchLb(id){activeLbTestId=id;buildLbSelector();loadLb(id);}
-async function loadLb(testId){
-  document.getElementById('lbData').innerHTML='<div class="skel" style="height:180px"></div>';
-  try{
-    const r=await fetch(`${API}?action=getLeaderboard&testId=${enc(testId)}`);
-    const d=await r.json();
-    const tInfo=lbTests.find(t=>t.id===testId)||{};
-    if(d.success&&d.leaderboard.length>0){
-      const rc=['g','s','b'];
-      const myPos=d.leaderboard.findIndex(s=>String(s.rollNo)===String(student.rollNo));
-      document.getElementById('lbData').innerHTML=`
-        <div class="card" style="animation:fadeIn .4s">
-          <h3 style="margin-bottom:4px;font-size:15px">🏆 ${tInfo.title||'Leaderboard'}</h3>
-          <p style="font-size:11px;color:var(--dim);margin-bottom:16px">${formatDate(tInfo.date||'')} &nbsp;·&nbsp; ${d.leaderboard.length} students${myPos>=0?` &nbsp;·&nbsp; <strong style="color:var(--acc)">Your Rank: #${myPos+1}</strong>`:' &nbsp;·&nbsp; <span style="color:var(--dim)">Not submitted</span>'}</p>
-          ${d.leaderboard.map((s,i)=>`
-          <div class="lb-row" style="${String(s.rollNo)===String(student.rollNo)?'background:rgba(255,111,0,.07);border-radius:8px;padding:11px 8px;margin:0 -8px':''}">
-            <div class="rnk ${rc[i]||''}">${i+1}</div>
-            <div class="lb-name">${s.name}${String(s.rollNo)===String(student.rollNo)?' ⭐':''}<br><span style="font-size:10px;color:var(--dim);font-weight:400">${s.studentClass||''}</span></div>
-            <div style="text-align:right"><div class="lb-score">${s.score}/${s.total}</div><div class="lb-time">${s.percentage}% · ${fmtT(s.timeTaken)}</div></div>
-          </div>`).join('')}
-        </div>`;
-    }else{
-      document.getElementById('lbData').innerHTML='<div class="card"><p style="text-align:center;color:var(--dim);padding:20px">No submissions yet. Be the first! 🚀</p></div>';
-    }
-  }catch(e){document.getElementById('lbData').innerHTML='<div class="card" style="color:#f44336">⚠️ Could not load.</div>';}
-}
-
-// ── QUIZ ────────────────────────────────────────────────
-function startQuiz(){
-  if(!test)return;
-  curQ=0;ans=new Array(test.questions.length).fill(null);
-  timeLeft=test.timer*60;tStart=Date.now();
-  saveQS();launchQ();
-}
-function resumeQuiz(){launchQ();}
-function launchQ(){
-  document.getElementById('qTitle').textContent=test.title;
-  document.getElementById('qSubject').textContent=test.subject.toUpperCase();
-  showS('quizScreen');renderQ();startTmr();
-}
-function renderQ(){
-  const q=test.questions[curQ],tot=test.questions.length;
-  document.getElementById('qNum').textContent=`Question ${curQ+1} of ${tot}`;
-  document.getElementById('qTxt').textContent=q.question;
-  document.getElementById('progFill').style.width=`${((curQ+1)/tot)*100}%`;
-  document.getElementById('opts').innerHTML=['A','B','C','D'].map((L,i)=>`
-    <div class="opt ${ans[curQ]===L?'sel':''}" style="animation-delay:${i*.06}s" onclick="pickOpt('${L}')">
-      <div class="opt-lbl">${L}</div><div>${q.options[i]}</div></div>`).join('');
-  const last=curQ===tot-1;
-  document.getElementById('btnPrev').style.display=curQ===0?'none':'block';
-  document.getElementById('btnNext').style.display=last?'none':'block';
-  document.getElementById('btnSub').style.display=last?'block':'none';
-}
-function pickOpt(L){ans[curQ]=L;saveQS();renderQ();}
-function goQ(d){curQ=Math.max(0,Math.min(test.questions.length-1,curQ+d));saveQS();renderQ();}
-function confirmSub(){
-  const left=ans.filter(a=>a===null).length;
-  if(confirm(left>0?`⚠️ ${left} question(s) unanswered.\nSubmit anyway?`:'Submit your test now?'))submitQuiz();
-}
-function saveQS(){
-  try{const e=Math.floor((Date.now()-tStart)/1000);localStorage.setItem(LS_QUIZ_STATE,JSON.stringify({rollNo:student.rollNo,test,ans,curQ,timeLeft,elapsed:e}));}catch(e){}
-}
-function clearQS(){localStorage.removeItem(LS_QUIZ_STATE);}
-function startTmr(){
-  clearInterval(timerInt);updTmr();
-  timerInt=setInterval(()=>{timeLeft--;updTmr();saveQS();if(timeLeft<=0){clearInterval(timerInt);submitQuiz();}},1000);
-}
-function updTmr(){
-  const m=String(Math.floor(timeLeft/60)).padStart(2,'0'),s=String(timeLeft%60).padStart(2,'0');
-  const el=document.getElementById('timerEl');
-  el.textContent=`${m}:${s}`;el.className='timer'+(timeLeft<=60?' warn':'');
-}
-
-async function submitQuiz(){
-  clearInterval(timerInt);clearQS();
-  const taken=Math.floor((Date.now()-tStart)/1000);
-  let score=0;
-  test.questions.forEach((q,i)=>{if(ans[i]===q.correct)score++;});
-  const tot=test.questions.length,pct=Math.round(score/tot*100);
-  markSubmitted(test.id);
-
-  // Animated submit overlay
-  showSubmitOL();
-  await delay(700);setStep(1,'done');setStep(2,'active');
-
-  try{
-    const fd=new FormData();
-    fd.append('action','submitResult');
-    fd.append('rollNo',student.rollNo);
-    fd.append('studentName',student.name);
-    fd.append('studentClass',student.class||'');
-    fd.append('testId',test.id);
-    fd.append('testTitle',test.title);
-    fd.append('testSubject',test.subject);
-    fd.append('score',score);fd.append('total',tot);
-    fd.append('percentage',pct);fd.append('timeTaken',taken);
-    await fetch(API,{method:'POST',body:fd,mode:'no-cors'});
-  }catch(e){}
-  await delay(600);setStep(2,'done');setStep(3,'active');
-
-  let rank=-1;
-  try{
-    await delay(2200);
-    const r=await fetch(`${API}?action=getLeaderboard&testId=${enc(test.id)}`);
-    const d=await r.json();
-    if(d.success){const p=d.leaderboard.findIndex(s=>String(s.rollNo)===String(student.rollNo));rank=p>=0?p+1:-1;}
-  }catch(e){}
-  setStep(3,'done');await delay(400);hideSubmitOL();
-  showResult(score,tot,taken,rank);
-}
-
-function showSubmitOL(){setStep(1,'active');setStep(2,'');setStep(3,'');document.getElementById('submitOverlay').classList.add('show');}
-function hideSubmitOL(){document.getElementById('submitOverlay').classList.remove('show');}
-function setStep(n,s){const e=document.getElementById('step'+n);e.className='so-step'+(s?' '+s:'');}
-
-async function showResult(score,tot,taken,rank=-1){
-  const pct=Math.round(score/tot*100);
-  let grade,hbC,emoji;
-  if(pct>=80){grade='Excellent!';hbC='hb-gold';emoji='🥇';}
-  else if(pct>=60){grade='Good Job!';hbC='hb-silver';emoji='🥈';}
-  else if(pct>=40){grade='Keep Trying!';hbC='hb-pass';emoji='👍';}
-  else{grade='Practice More';hbC='hb-fail';emoji='📖';}
-
-  document.getElementById('resHero').innerHTML=`
-    <div class="res-hero">
-      <div class="sc-ring">
-        <svg width="116" height="116" viewBox="0 0 116 116">
-          <circle cx="58" cy="58" r="50" fill="none" stroke="var(--brd)" stroke-width="10"/>
-          <circle cx="58" cy="58" r="50" fill="none" stroke="var(--acc)" stroke-width="10"
-            stroke-dasharray="${2*Math.PI*50*pct/100} ${2*Math.PI*50}" stroke-linecap="round"/>
-        </svg>
-        <div class="sc-inner"><div class="sc-num">${score}</div><div class="sc-den">/ ${tot}</div></div>
+        <form class="form-grid" id="authForm" autocomplete="off">
+          ${mode==='register' ? `
+            <div class="row">
+              <div class="field"><label class="label">Full name</label><input class="input" name="name" required data-testid="input-name"/></div>
+              <div class="field"><label class="label">Class</label>
+                <select class="select" name="klass" data-testid="input-class">
+                  <option>9</option><option selected>10</option><option>11</option><option>12</option><option>Competitive</option>
+                </select>
+              </div>
+            </div>
+          ` : ``}
+          <div class="field"><label class="label">Username</label><input class="input" name="username" required data-testid="input-username"/></div>
+          <div class="field"><label class="label">Password</label><input class="input" type="password" name="password" required data-testid="input-password"/></div>
+          <button type="submit" class="btn btn-primary" data-testid="btn-auth-submit">${mode==='register'?'Create account':'Sign in'}</button>
+        </form>
       </div>
-      <h2 style="font-size:20px;margin-bottom:6px">${emoji} ${grade}</h2>
-      <div style="font-size:26px;font-weight:800;color:var(--acc)">${pct}%</div>
-      <div class="hero-badge ${hbC}">${student.name}</div>
     </div>`;
-  document.getElementById('rsC').textContent=score;
-  document.getElementById('rsW').textContent=tot-score;
-  document.getElementById('rsTime').textContent=fmtT(taken);
-  document.getElementById('rsRank').textContent=rank>0?`#${rank}`:'—';
 
-  document.getElementById('review').innerHTML=test.questions.map((q,i)=>{
-    const ua=ans[i],cor=q.correct,ok=ua===cor,lbls=['A','B','C','D'];
-    return `<div class="rev-item">
-      <div style="font-size:11px;color:var(--dim);margin-bottom:5px;font-weight:600">Q${i+1}</div>
-      <div class="rev-q">${q.question}</div>
-      <div style="font-size:13px;color:${ok?'#4caf50':'#f44336'}">${ok?'✅':'❌'} Your answer: ${ua?`${ua}. ${q.options[lbls.indexOf(ua)]}`:'<em>Not answered</em>'}</div>
-      ${!ok?`<div style="font-size:13px;color:#4caf50;margin-top:4px">✅ Correct: ${cor}. ${q.options[lbls.indexOf(cor)]}</div>`:''}
+  root.querySelector("#adminGear").onclick = () => { state.route = "admin-auth"; render(); };
+  root.querySelectorAll(".auth-tab").forEach(t => t.onclick = () => { state.authMode = t.dataset.mode; render(); });
+  root.querySelector("#authForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    const btn = e.target.querySelector("button[type=submit]");
+    btn.disabled = true; btn.textContent = "…";
+    try {
+      const res = mode === "register"
+        ? await api("register", { name: f.get("name"), username: f.get("username"), password: f.get("password"), klass: f.get("klass") })
+        : await api("login", { username: f.get("username"), password: f.get("password") });
+      state.student = res.student;
+      store.set("student", res.student);
+      state.route = "app"; state.tab = "home";
+      toast(`Welcome, ${res.student.name.split(" ")[0]}!`, "success");
+      render();
+    } catch (err) {
+      toast(err.message, "error");
+      btn.disabled = false; btn.textContent = mode === "register" ? "Create account" : "Sign in";
+    }
+  };
+}
+
+/* ==============================================================
+   ADMIN AUTH
+   ============================================================== */
+function renderAdminAuth(root){
+  root.innerHTML = `
+    <button class="admin-trigger" id="backBtn" title="Back">✕</button>
+    <div class="auth-wrap">
+      <div class="auth-card glass">
+        <div class="brand">
+          <div class="brand-mark" style="background:linear-gradient(135deg,#fbbf24,#a259ff)">A</div>
+          <div class="brand-name">Admin <span>Panel</span></div>
+        </div>
+        <p class="muted" style="text-align:center;margin-bottom:24px;font-size:.9rem">Restricted area · staff only</p>
+        <form class="form-grid" id="adminForm">
+          <div class="field"><label class="label">Username</label><input class="input" name="username" required data-testid="admin-username"/></div>
+          <div class="field"><label class="label">Password</label><input class="input" type="password" name="password" required data-testid="admin-password"/></div>
+          <button type="submit" class="btn btn-primary" data-testid="admin-submit">Enter Admin</button>
+        </form>
+      </div>
     </div>`;
-  }).join('');
-  showS('resultScreen');
+  root.querySelector("#backBtn").onclick = () => { state.route = "auth"; render(); };
+  root.querySelector("#adminForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    const btn = e.target.querySelector("button");
+    btn.disabled = true; btn.textContent = "…";
+    try {
+      const res = await api("adminLogin", { username: f.get("username"), password: f.get("password") });
+      state.admin = res.admin;
+      store.set("admin", res.admin);
+      state.route = "admin"; state.adminTab = "dashboard";
+      toast(`Hello, ${res.admin.name}`, "success");
+      render();
+    } catch (err) {
+      toast(err.message, "error");
+      btn.disabled = false; btn.textContent = "Enter Admin";
+    }
+  };
 }
-function backHome(){showS('homeScreen');homeTab('today');}
 
-// ── UTILS ───────────────────────────────────────────────
-function v(id){return document.getElementById(id).value.trim()}
-function enc(s){return encodeURIComponent(s)}
-function showS(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
-function alert2(id,msg,type){const el=document.getElementById(id);el.className=`alert show al-${type}`;el.textContent=msg}
-function fmtT(s){return`${Math.floor(s/60)}m ${s%60}s`}
-function setBtnLoad(id,loading,txt){const b=document.getElementById(id);if(b){b.textContent=txt;b.classList.toggle('btn-loading',loading);}}
-function todayFmts(){
-  const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
-  return{iso:`${y}-${m}-${dd}`,dmy:`${dd}/${m}/${y}`,mdy:`${m}/${dd}/${y}`};
+/* ==============================================================
+   STUDENT APP SHELL
+   ============================================================== */
+function renderStudentApp(root){
+  const s = state.student;
+  root.innerHTML = `
+    <header class="appbar">
+      <div class="appbar-inner">
+        <div class="user-tag">
+          <div class="avatar">${esc((s.name||"S")[0].toUpperCase())}</div>
+          <div class="user-info"><b>${esc(s.name)}</b><br/><small>${esc(s.rollNo)} · Class ${esc(s.klass)}</small></div>
+        </div>
+        <button class="btn-icon" id="logoutBtn" title="Log out" data-testid="btn-logout" style="color:var(--red);border-color:rgba(248,113,113,.25)">${icon("logout")}</button>
+      </div>
+    </header>
+    <main class="container" style="padding-top:20px" id="studentMain"></main>
+    <nav class="bottom-nav" role="tablist">
+      <button class="nav-btn ${state.tab==='home'?'active':''}" data-tab="home" data-testid="nav-home">${icon("home")}<span>Home</span></button>
+      <button class="nav-btn ${state.tab==='tests'?'active':''}" data-tab="tests" data-testid="nav-tests">${icon("test")}<span>Tests</span></button>
+      <button class="nav-btn ${state.tab==='doubts'?'active':''}" data-tab="doubts" data-testid="nav-doubts">${icon("doubt")}<span>Doubts</span></button>
+    </nav>`;
+
+  root.querySelector("#logoutBtn").onclick = () => {
+    store.del("student");
+    state.student = null;
+    state.quiz = null;
+    state.result = null;
+    state.route = "auth";
+    clearInterval(window.__timerId);
+    render();
+    toast("Logged out");
+  };
+  root.querySelectorAll(".nav-btn").forEach(b => b.onclick = () => {
+    state.tab = b.dataset.tab;
+    state.result = null; // clear stale result when switching tabs
+    store.set("activeTab", b.dataset.tab);
+    render();
+  });
+
+  const main = root.querySelector("#studentMain");
+  if (state.quiz) return renderQuiz(main);
+  if (state.result) return renderResult(main);
+  if (state.tab === "home")   return renderHome(main);
+  if (state.tab === "tests")  return renderTests(main);
+  if (state.tab === "doubts") return renderDoubts(main);
 }
-function yesterdayFmts(){
-  const d=new Date();d.setDate(d.getDate()-1);
-  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
-  return{iso:`${y}-${m}-${dd}`,dmy:`${dd}/${m}/${y}`,mdy:`${m}/${dd}/${y}`};
+
+/* --- HOME --- */
+async function renderHome(root){
+  root.innerHTML = skeletonList(3);
+  try {
+    const { feed = [], config = {} } = await api("getFeed");
+    const banner = config.bannerURL || "";
+    const announcement = config.announcement || "Welcome back! Keep up the study streak.";
+
+    root.innerHTML = `
+      <div class="hero-banner" data-testid="home-banner">
+        <div class="hero-content">
+          <div class="hero-eyebrow"><span>⚗ ChemVeda Pro 2026–27</span></div>
+          <div class="hero-title">Hey ${esc(state.student.name.split(" ")[0])},<br/>ready to <span class="grad">level up?</span></div>
+          <div class="hero-subtitle">${esc(announcement)}</div>
+          <div class="hero-pills">
+            <div class="hero-pill">🎯 Daily Tests</div>
+            <div class="hero-pill">📈 Live Rankings</div>
+            <div class="hero-pill">💬 Doubt Support</div>
+            <div class="hero-pill">📄 Study Material</div>
+          </div>
+        </div>
+        <div class="hero-deco">
+          <div class="hero-molecule">
+            <svg viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="120" cy="120" r="28" fill="rgba(162,89,255,0.35)" stroke="rgba(162,89,255,0.7)" stroke-width="2"/>
+              <text x="120" y="126" text-anchor="middle" font-family="Space Grotesk" font-size="16" font-weight="700" fill="#d4b8ff">C</text>
+              <circle cx="40" cy="80" r="18" fill="rgba(96,165,250,0.25)" stroke="rgba(96,165,250,0.6)" stroke-width="1.5"/>
+              <text x="40" y="86" text-anchor="middle" font-family="Space Grotesk" font-size="13" font-weight="700" fill="#93c5fd">H</text>
+              <circle cx="200" cy="80" r="18" fill="rgba(96,165,250,0.25)" stroke="rgba(96,165,250,0.6)" stroke-width="1.5"/>
+              <text x="200" y="86" text-anchor="middle" font-family="Space Grotesk" font-size="13" font-weight="700" fill="#93c5fd">H</text>
+              <circle cx="60" cy="180" r="20" fill="rgba(34,197,94,0.2)" stroke="rgba(34,197,94,0.55)" stroke-width="1.5"/>
+              <text x="60" y="186" text-anchor="middle" font-family="Space Grotesk" font-size="13" font-weight="700" fill="#86efac">O</text>
+              <circle cx="185" cy="175" r="20" fill="rgba(34,197,94,0.2)" stroke="rgba(34,197,94,0.55)" stroke-width="1.5"/>
+              <text x="185" y="181" text-anchor="middle" font-family="Space Grotesk" font-size="13" font-weight="700" fill="#86efac">N</text>
+              <circle cx="120" cy="30" r="16" fill="rgba(251,191,36,0.2)" stroke="rgba(251,191,36,0.5)" stroke-width="1.5"/>
+              <text x="120" y="36" text-anchor="middle" font-family="Space Grotesk" font-size="12" font-weight="700" fill="#fde68a">S</text>
+              <line x1="120" y1="92" x2="58" y2="80" stroke="rgba(162,89,255,0.5)" stroke-width="1.5"/>
+              <line x1="120" y1="92" x2="182" y2="80" stroke="rgba(162,89,255,0.5)" stroke-width="1.5"/>
+              <line x1="120" y1="148" x2="75" y2="162" stroke="rgba(34,197,94,0.45)" stroke-width="1.5"/>
+              <line x1="120" y1="148" x2="167" y2="160" stroke="rgba(34,197,94,0.45)" stroke-width="1.5"/>
+              <line x1="120" y1="92" x2="120" y2="46" stroke="rgba(251,191,36,0.4)" stroke-width="1.5"/>
+              <circle cx="40" cy="80" r="5" fill="rgba(96,165,250,0.5)"/>
+              <circle cx="200" cy="80" r="5" fill="rgba(96,165,250,0.5)"/>
+            </svg>
+          </div>
+        </div>
+        ${banner ? `<img src="${esc(banner)}" style="position:absolute;right:0;top:0;height:100%;object-fit:cover;opacity:.18;border-radius:var(--radius-lg)" alt="" onerror="this.remove()"/>` : ""}
+      </div>
+
+      <div class="section-header"><h2>Live &amp; Upcoming Classes</h2></div>
+      <div class="feed-grid" id="ytGrid"></div>
+
+      <div class="section-header"><h2>Study Material</h2></div>
+      <div class="feed-grid" id="pdfGrid"></div>
+
+      <div class="section-header"><h2>Announcements</h2></div>
+      <div class="feed-grid" id="annGrid"></div>
+    `;
+
+    const yt = feed.filter(f => String(f.Type).toLowerCase() === "class");
+    const pdf = feed.filter(f => String(f.Type).toLowerCase() === "pdf");
+    const ann = feed.filter(f => String(f.Type).toLowerCase() === "announcement");
+
+    root.querySelector("#ytGrid").innerHTML = yt.length ? yt.map(feedCard).join("") : emptyMsg("No classes scheduled yet");
+    root.querySelector("#pdfGrid").innerHTML = pdf.length ? pdf.map(feedCard).join("") : emptyMsg("No study material yet");
+    root.querySelector("#annGrid").innerHTML = ann.length ? ann.map(feedCard).join("") : emptyMsg("No announcements yet");
+  } catch (e) { root.innerHTML = errorMsg(e.message); }
 }
-function normDate(val){
-  if(!val)return'';const s=String(val).trim();
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
-  const dmy=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if(dmy)return`${dmy[3]}-${dmy[2].padStart(2,'0')}-${dmy[1].padStart(2,'0')}`;
-  return s;
+
+function feedCard(f){
+  const type = String(f.Type||"").toLowerCase();
+  const cls = type === "class" ? "yt" : type === "pdf" ? "pdf" : "ann";
+  const ic  = type === "class" ? "▶" : type === "pdf" ? "📄" : "📢";
+  const url = f.URL || "#";
+  return `<a href="${esc(url)}" target="_blank" rel="noopener" class="card feed-item" data-testid="feed-item">
+    <div class="feed-icon ${cls}">${ic}</div>
+    <b>${esc(f.Title||"Untitled")}</b>
+    <small class="muted">${esc(f.Description||"")}</small>
+    <small class="mute2 tiny">${esc(fmtDate(f.PostedOn))}</small>
+  </a>`;
 }
-function formatDate(d){
-  try{const s=normDate(d);if(!s)return d;const dt=new Date(s+'T00:00:00');return dt.toLocaleDateString('en-IN',{day:'numeric',month:'short'});}catch(e){return d;}
+function emptyMsg(t){ return `<div class="empty" style="grid-column:1/-1"><p>${esc(t)}</p></div>`; }
+function errorMsg(t){ return `<div class="card" style="border-color:rgba(248,113,113,.3);color:#fecaca">${esc(t)}</div>`; }
+function skeletonList(n){
+  let out = "";
+  for (let i=0;i<n;i++) out += `<div class="card" style="margin-bottom:12px"><div class="skeleton" style="height:16px;width:60%;margin-bottom:10px"></div><div class="skeleton" style="height:12px;width:40%"></div></div>`;
+  return out;
 }
+
+/* --- TESTS --- */
+async function renderTests(root){
+  root.innerHTML = skeletonList(3);
+  try {
+    const { tests = [], todayTestId } = await api("getTests");
+    const resAll = await api("getResults", { rollNo: state.student.rollNo });
+    const takenIds = new Set((resAll.results||[]).map(r=>r.TestID));
+    const today = tests.find(t => t.testId === todayTestId);
+    const past = tests.filter(t => t.testId !== todayTestId);
+
+    root.innerHTML = `
+      ${today ? `
+        <div class="glass today-card" data-testid="today-test">
+          <span class="badge green">● Today</span>
+          <h3>${esc(today.title)}</h3>
+          <p class="muted" style="margin:6px 0 14px">${esc(today.subject)} · ${today.timer} min · ${today.questionsCount} questions</p>
+          ${takenIds.has(today.testId)
+            ? `<span class="badge green" style="padding:10px 16px;font-size:.85rem">✓ Already Submitted</span>`
+            : `<button class="btn btn-green" id="startToday" data-testid="btn-start-today">Start Test →</button>`
+          }
+        </div>` : ""}
+
+      <div class="section-header"><h2>All Tests</h2>
+        <button class="btn btn-ghost btn-sm" id="lbBtn" data-testid="btn-leaderboard">🏆 Leaderboard</button>
+      </div>
+      <div id="testList"></div>
+    `;
+    const tl = root.querySelector("#testList");
+    if (!tests.length) {
+      tl.innerHTML = emptyMsg("No tests have been created yet");
+    } else if (!past.length && !today) {
+      tl.innerHTML = emptyMsg("No tests available");
+    } else if (past.length && past.every(t => takenIds.has(t.testId))) {
+      tl.innerHTML = `
+        <div class="card" style="text-align:center;padding:28px;border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.06)">
+          <div style="font-size:2.5rem;margin-bottom:10px">🎉</div>
+          <h3 style="color:var(--green);margin-bottom:6px">All tests completed!</h3>
+          <p class="muted" style="font-size:.9rem">You've attempted all available tests. Check back later for new ones.</p>
+          <div style="margin-top:14px">
+            ${past.map(t => `<div class="test-row" style="margin-bottom:8px">
+              <div class="meta"><b>${esc(t.title)}</b><small>${esc(t.subject)} · ${esc(fmtDay(t.date))}</small></div>
+              <span class="badge green">✓ Done</span>
+            </div>`).join("")}
+          </div>
+        </div>`;
+    } else {
+      tl.innerHTML = past.map(t => `
+        <div class="test-row" data-testid="test-row">
+          <div class="meta">
+            <b>${esc(t.title)}</b>
+            <small>${esc(t.subject)} · ${esc(fmtDay(t.date))} · ${t.timer} min · ${t.questionsCount} Q</small>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            ${takenIds.has(t.testId)
+              ? `<span class="badge green">✓ Attempted</span>`
+              : `<button class="btn btn-primary btn-sm start-test" data-id="${esc(t.testId)}" data-testid="btn-start-${esc(t.testId)}">Start</button>`
+            }
+          </div>
+        </div>`).join("");
+    }
+
+    const startTodayBtn = root.querySelector("#startToday");
+    if (startTodayBtn) startTodayBtn.onclick = () => startQuiz(today.testId);
+    root.querySelectorAll(".start-test").forEach(b => b.onclick = () => startQuiz(b.dataset.id));
+    root.querySelector("#lbBtn").onclick = () => openLeaderboard();
+  } catch (e) { root.innerHTML = errorMsg(e.message); }
+}
+
+async function openLeaderboard(){
+  const modal = openModal("🏆 Leaderboard", `
+    <div class="toolbar">
+      <select class="select" id="lbClass" data-testid="lb-class">
+        <option value="">All classes</option>
+        <option>9</option><option>10</option><option>11</option><option>12</option><option>Competitive</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" id="lbRefresh">Refresh</button>
+    </div>
+    <div id="lbBody">${skeletonList(4)}</div>`);
+  async function load(){
+    const klass = modal.querySelector("#lbClass").value;
+    modal.querySelector("#lbBody").innerHTML = skeletonList(4);
+    const { leaderboard = [] } = await api("getLeaderboard", klass ? { klass } : {});
+    modal.querySelector("#lbBody").innerHTML = leaderboard.length ? `
+      <div class="table-wrap"><table class="data-table">
+        <thead><tr><th>#</th><th>Name</th><th>Class</th><th>Test</th><th>Score</th><th>Time</th></tr></thead>
+        <tbody>${leaderboard.map(r=>`<tr><td><b>${r.rank}</b></td><td>${esc(r.name)}</td><td>${esc(r.klass)}</td><td>${esc(r.testTitle)}</td><td><b>${r.pct}%</b></td><td>${esc(r.timeFmt)}</td></tr>`).join("")}</tbody>
+      </table></div>` : emptyMsg("No results yet");
+  }
+  modal.querySelector("#lbClass").onchange = load;
+  modal.querySelector("#lbRefresh").onclick = load;
+  load();
+}
+
+/* --- QUIZ --- */
+async function startQuiz(testId){
+  showLoading("Loading test…");
+  try {
+    const { test } = await api("getTest", { testId });
+    const saved = store.get("resume_" + testId);
+    state.quiz = {
+      test,
+      answers: saved?.answers || new Array(test.questions.length).fill(null),
+      cursor: saved?.cursor || 0,
+      startedAt: saved?.startedAt || Date.now(),
+      timerSec: test.timer * 60
+    };
+    hideLoading();
+    render();
+  } catch (e) { hideLoading(); toast(e.message, "error"); }
+}
+
+function renderQuiz(root){
+  const q = state.quiz;
+  const cur = q.cursor;
+  const question = q.test.questions[cur];
+  const elapsed = Math.floor((Date.now() - q.startedAt) / 1000);
+  const remain = Math.max(q.timerSec - elapsed, 0);
+
+  root.innerHTML = `
+    <div class="quiz-wrap">
+      <div class="quiz-head">
+        <div>
+          <span class="badge purple">${esc(q.test.subject)}</span>
+          <h2 style="margin-top:6px">${esc(q.test.title)}</h2>
+        </div>
+        <div class="timer" id="timer" data-testid="quiz-timer">⏱ <span id="timerTxt">${fmtSec(remain)}</span></div>
+      </div>
+
+      <div class="glass q-card" data-testid="quiz-question">
+        <div class="q-num">Question ${cur+1} of ${q.test.questions.length}</div>
+        <div class="q-text">${esc(question.q || question.text || question.question || "(Question text not available)")}</div>
+        ${question.q_hi ? `<div class="q-text-hi hi">${esc(question.q_hi)}</div>` : ""}
+        <div id="opts"></div>
+      </div>
+
+      <div class="quiz-controls">
+        <button class="btn btn-ghost" id="prev" ${cur===0?'disabled':''} data-testid="btn-prev">← Prev</button>
+        ${cur === q.test.questions.length - 1
+          ? `<button class="btn btn-green" id="submit" data-testid="btn-submit-quiz">Submit ✓</button>`
+          : `<button class="btn btn-primary" id="next" data-testid="btn-next">Next →</button>`}
+      </div>
+
+      <div class="palette" data-testid="quiz-palette">${q.test.questions.map((_,i)=>`
+        <button class="pal-btn ${q.answers[i]!=null?'answered':''} ${i===cur?'current':''}" data-i="${i}">${i+1}</button>
+      `).join("")}</div>
+    </div>`;
+
+  // options
+  const opts = root.querySelector("#opts");
+  const questionOptions = question.options || question.choices || [];
+  if (questionOptions.length === 0) {
+    opts.innerHTML = `<div class="muted" style="padding:12px">No options found for this question. Check the test data format.</div>`;
+  }
+  questionOptions.forEach((op, i) => {
+    const div = document.createElement("div");
+    div.className = "option" + (q.answers[cur] === i ? " selected" : "");
+    div.setAttribute("data-testid", `quiz-option-${i}`);
+    div.innerHTML = `<div class="letter">${String.fromCharCode(65+i)}</div>
+      <div><div class="txt">${esc(op)}</div>${question.options_hi&&question.options_hi[i]?`<div class="txt-hi hi">${esc(question.options_hi[i])}</div>`:""}</div>`;
+    div.onclick = () => { q.answers[cur] = i; store.set("resume_"+q.test.testId, {test: q.test, answers: q.answers, cursor: q.cursor, startedAt: q.startedAt}); render(); };
+    opts.appendChild(div);
+  });
+
+  // nav
+  const btnPrev = root.querySelector("#prev");
+  if (btnPrev) btnPrev.onclick = () => { q.cursor = Math.max(0, cur - 1); render(); };
+  const btnNext = root.querySelector("#next");
+  if (btnNext) btnNext.onclick = () => { q.cursor = Math.min(q.test.questions.length-1, cur+1); render(); };
+  const btnSubmit = root.querySelector("#submit");
+  if (btnSubmit) btnSubmit.onclick = confirmSubmit;
+
+  root.querySelectorAll(".pal-btn").forEach(b => b.onclick = () => { q.cursor = Number(b.dataset.i); render(); });
+
+  // timer tick
+  clearInterval(window.__timerId);
+  window.__timerId = setInterval(() => {
+    const el = Math.floor((Date.now() - q.startedAt) / 1000);
+    const r = Math.max(q.timerSec - el, 0);
+    const tt = root.querySelector("#timerTxt");
+    if (!tt) return clearInterval(window.__timerId);
+    tt.textContent = fmtSec(r);
+    if (r < 120) root.querySelector("#timer").classList.add("warn");
+    if (r <= 0) { clearInterval(window.__timerId); submitQuiz(true); }
+  }, 1000);
+}
+
+function fmtSec(s){ const m = Math.floor(s/60), r = s%60; return `${String(m).padStart(2,"0")}:${String(r).padStart(2,"0")}`; }
+
+function confirmSubmit(){
+  const q = state.quiz;
+  const unans = q.answers.filter(a => a == null || a === undefined).length;
+  const modal = openModal("Submit test?", `
+    <p class="muted" style="margin-bottom:16px">${unans>0 ? `You have <b style="color:#fecaca">${unans}</b> unanswered question(s). ` : ""}Are you sure you want to submit?</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" id="cx">Cancel</button>
+      <button class="btn btn-green" id="cf" data-testid="btn-confirm-submit">Submit</button>
+    </div>`);
+  modal.querySelector("#cx").onclick = () => modal.remove();
+  modal.querySelector("#cf").onclick = () => { modal.remove(); submitQuiz(false); };
+}
+
+async function submitQuiz(auto){
+  const q = state.quiz;
+  clearInterval(window.__timerId);
+  showLoading(auto ? "Time up — submitting…" : "Grading your test…");
+  try {
+    const timeSec = Math.min(Math.floor((Date.now() - q.startedAt)/1000), q.timerSec);
+    const { result } = await api("submitResult", {
+      testId: q.test.testId, rollNo: state.student.rollNo, name: state.student.name, klass: state.student.klass,
+      answers: q.answers, timeSec
+    });
+    store.del("resume_" + q.test.testId);
+    state.quiz = null;
+    state.result = { result, test: q.test, timeSec };
+    hideLoading(); render();
+  } catch (e) {
+    hideLoading();
+    if (e.message && e.message.includes("already submitted")) {
+      // Clear local resume state since server already has it
+      store.del("resume_" + q.test.testId);
+      state.quiz = null;
+      state.tab = "tests";
+      toast("This test was already submitted.", "error");
+      render();
+    } else {
+      toast(e.message, "error");
+    }
+  }
+}
+
+/* --- RESULT --- */
+function renderResult(root){
+  const { result, test, timeSec } = state.result;
+  const pct = result.pct;
+  const isHigh = pct >= 80;
+  root.innerHTML = `
+    <div class="container" style="padding-top:12px;max-width:820px">
+      <div class="glass result-hero" data-testid="result-hero">
+        <div class="grade-circle" style="--pct:${pct}%"><span>${esc(result.grade)}</span></div>
+        <h1>${isHigh ? "Outstanding!" : pct>=50 ? "Well done!" : "Keep going!"}</h1>
+        <p class="muted" style="margin-top:6px">${esc(test.title)} · ${esc(test.subject)}</p>
+        <div class="result-stats">
+          <div class="stat-tile"><b>${result.score}/${result.total}</b><small>Score</small></div>
+          <div class="stat-tile"><b>${pct}%</b><small>Percentage</small></div>
+          <div class="stat-tile"><b>${result.review.filter(r=>r.isCorrect).length}</b><small>Correct</small></div>
+          <div class="stat-tile"><b>${result.review.filter(r=>!r.isCorrect&&r.chosen>=0).length}</b><small>Wrong</small></div>
+          <div class="stat-tile"><b>${fmtSec(timeSec)}</b><small>Time</small></div>
+        </div>
+        <div id="celeb" style="width:220px;margin:0 auto"></div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap">
+          <button class="btn btn-ghost" id="backBtn">Back to Tests</button>
+          <button class="btn btn-primary" id="reviewBtn" data-testid="btn-review">See Review</button>
+        </div>
+      </div>
+      <div id="reviewBody" class="hidden" style="margin-top:20px"></div>
+    </div>`;
+
+  if (isHigh) lottieMount(root.querySelector("#celeb"), LOTTIE.celebrate, { loop: false });
+  else lottieMount(root.querySelector("#celeb"), LOTTIE.success, { loop: false });
+
+  root.querySelector("#backBtn").onclick = () => { state.result = null; state.tab = "tests"; render(); };
+  let reviewOpen = false;
+  root.querySelector("#reviewBtn").onclick = () => {
+    const rb = root.querySelector("#reviewBody");
+    const btn = root.querySelector("#reviewBtn");
+    reviewOpen = !reviewOpen;
+    if (!reviewOpen) {
+      rb.classList.add("hidden");
+      btn.textContent = "See Review";
+      return;
+    }
+    rb.classList.remove("hidden");
+    btn.textContent = "Hide Review";
+    const reviewData = result.review || [];
+    if (!reviewData.length) {
+      rb.innerHTML = `<div class="card muted" style="text-align:center;padding:24px">No review data available.</div>`;
+      return;
+    }
+    rb.innerHTML = reviewData.map((r, i) => {
+      const opts = r.options || r.choices || [];
+      const correctIdx = Number(r.correct);
+      const chosenIdx  = (r.chosen !== undefined && r.chosen !== null) ? Number(r.chosen) : -1;
+      return `<div class="review-item ${r.isCorrect ? 'correct' : 'wrong'}">
+        <div class="review-q">${i+1}. ${esc(r.q || r.text || "")}</div>
+        ${r.q_hi ? `<div class="hi muted" style="margin-bottom:6px">${esc(r.q_hi)}</div>` : ""}
+        ${opts.map((op, idx) => {
+          const isCorrect = idx === correctIdx;
+          const isChosen  = idx === chosenIdx;
+          let cls = "";
+          let suffix = "";
+          if (isCorrect) { cls = "correct"; suffix = " ✓ Correct"; }
+          else if (isChosen && !isCorrect) { cls = "your"; suffix = " ✗ Your answer"; }
+          return `<div class="review-opt ${cls}">${String.fromCharCode(65+idx)}. ${esc(op)}${suffix}</div>`;
+        }).join("")}
+        ${chosenIdx === -1 ? `<div class="review-opt" style="color:var(--amber);margin-top:6px">⚠ Not attempted</div>` : ""}
+      </div>`;
+    }).join("");
+  };
+}
+
+/* --- DOUBTS --- */
+async function renderDoubts(root){
+  root.innerHTML = `
+    <div class="section-header"><h2>Doubt Box</h2></div>
+    <div class="glass" style="padding:18px;margin-bottom:20px">
+      <form id="doubtForm" class="form-grid">
+        <div class="row">
+          <div class="field"><label class="label">Subject</label>
+            <select class="select" name="subject" data-testid="doubt-subject"><option>Chemistry</option><option>Physics</option><option>Math</option><option>Biology</option><option>General</option></select>
+          </div>
+          <div class="field" style="align-self:end"><button class="btn btn-primary" type="submit" data-testid="btn-post-doubt">Post Doubt</button></div>
+        </div>
+        <div class="field"><label class="label">Your question</label>
+          <textarea class="textarea" name="question" required placeholder="Type your doubt here…" data-testid="doubt-question"></textarea>
+        </div>
+      </form>
+    </div>
+    <div id="myDoubts">${skeletonList(2)}</div>`;
+
+  root.querySelector("#doubtForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    try {
+      await api("postDoubt", { rollNo: state.student.rollNo, name: state.student.name, subject: f.get("subject"), question: f.get("question") });
+      toast("Doubt posted!","success");
+      e.target.reset();
+      loadDoubts();
+    } catch (err) { toast(err.message, "error"); }
+  };
+  loadDoubts();
+
+  async function loadDoubts(){
+    try {
+      const { doubts = [] } = await api("getDoubts", { rollNo: state.student.rollNo });
+      const wrap = root.querySelector("#myDoubts");
+      if (!doubts.length) { wrap.innerHTML = emptyMsg("You haven't posted any doubts yet"); return; }
+      wrap.innerHTML = doubts.map(d => `
+        <div class="doubt-item" data-testid="doubt-item">
+          <div class="top">
+            <div><span class="badge purple">${esc(d.Subject||"General")}</span></div>
+            <span class="badge ${String(d.Status).toLowerCase()==='resolved'?'green':String(d.Status).toLowerCase()==='replied'?'amber':'red'}">${esc(d.Status||"open")}</span>
+          </div>
+          <div class="q">${esc(d.Question)}</div>
+          <small class="mute2 tiny">Posted ${esc(fmtDate(d.PostedOn))}</small>
+          ${d.Reply ? `<div class="reply"><b style="color:#86efac">Teacher's reply:</b><br/>${esc(d.Reply)}<br/><small class="mute2 tiny">Replied ${esc(fmtDate(d.RepliedOn))}</small></div>`:""}
+        </div>`).join("");
+    } catch (e) { root.querySelector("#myDoubts").innerHTML = errorMsg(e.message); }
+  }
+}
+
+/* ==============================================================
+   ADMIN PANEL
+   ============================================================== */
+function renderAdmin(root){
+  root.innerHTML = `
+    <div class="admin-shell">
+      <aside class="admin-side">
+        <div class="brand" style="margin-bottom:20px">
+          <div class="brand-mark" style="background:linear-gradient(135deg,#fbbf24,#a259ff)">A</div>
+          <div class="brand-name" style="font-size:1.05rem">Admin</div>
+        </div>
+        <div id="adminNav"></div>
+        <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:12px">
+          <div class="muted tiny" style="padding:0 14px 6px">${esc(state.admin.name)}</div>
+          <button class="admin-nav-btn" id="adminLogout" data-testid="btn-admin-logout">${icon("logout")}<span>Log out</span></button>
+        </div>
+      </aside>
+      <main class="admin-main" id="adminMain"></main>
+    </div>`;
+  const nav = root.querySelector("#adminNav");
+  const items = [
+    ["dashboard","Dashboard","📊"],
+    ["tests","Tests","📝"],
+    ["students","Students","👥"],
+    ["feed","Feed","📢"],
+    ["doubts","Doubts","💬"],
+    ["results","Results","🏆"]
+  ];
+  nav.innerHTML = items.map(([k,l,i]) => `<button class="admin-nav-btn ${state.adminTab===k?'active':''}" data-tab="${k}" data-testid="admin-nav-${k}">${i} <span>${l}</span></button>`).join("");
+  nav.querySelectorAll(".admin-nav-btn").forEach(b => b.onclick = () => { state.adminTab = b.dataset.tab; render(); });
+  root.querySelector("#adminLogout").onclick = () => { store.del("admin"); state.admin = null; state.route = "auth"; render(); toast("Signed out"); };
+
+  const main = root.querySelector("#adminMain");
+  if (state.adminTab === "dashboard") return adminDashboard(main);
+  if (state.adminTab === "tests")     return adminTests(main);
+  if (state.adminTab === "students")  return adminStudents(main);
+  if (state.adminTab === "feed")      return adminFeed(main);
+  if (state.adminTab === "doubts")    return adminDoubts(main);
+  if (state.adminTab === "results")   return adminResults(main);
+}
+
+async function adminDashboard(root){
+  root.innerHTML = `<h1>Dashboard</h1><p class="muted" style="margin-bottom:20px">Overview of platform activity</p><div class="stat-grid" id="statGrid">${skeletonList(4)}</div>`;
+  try {
+    const { stats } = await api("adminStats");
+    root.querySelector("#statGrid").innerHTML = `
+      ${statCard("👥", "Total students", stats.students, "#a259ff")}
+      ${statCard("📝", "Total tests", stats.tests, "#22c55e")}
+      ${statCard("📊", "Tests today", stats.testsToday, "#fbbf24")}
+      ${statCard("📈", "Tests this week", stats.testsWeek, "#60a5fa")}
+      ${statCard("🎯", "Avg score", stats.avg + "%", "#f472b6")}
+      ${statCard("💬", "Active doubts", stats.activeDoubts, "#f87171")}
+    `;
+  } catch (e) { root.querySelector("#statGrid").innerHTML = errorMsg(e.message); }
+}
+function statCard(ic,label,val,color){
+  return `<div class="stat-card" data-testid="stat-${esc(label).replace(/\s/g,'-').toLowerCase()}">
+    <div class="icon" style="background:${color}22;color:${color}">${ic}</div>
+    <b>${esc(val)}</b><small>${esc(label)}</small>
+  </div>`;
+}
+
+/* --- ADMIN Tests --- */
+async function adminTests(root){
+  root.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div><h1>Test Manager</h1><p class="muted">Create, edit, and manage tests</p></div>
+      <button class="btn btn-primary" id="addTest" data-testid="btn-add-test">+ New Test</button>
+    </div>
+    <div id="testTableWrap">${skeletonList(3)}</div>`;
+  root.querySelector("#addTest").onclick = () => testForm(null);
+  await refresh();
+  async function refresh(){
+    try {
+      const { tests = [] } = await api("crudTest", { op: "list" });
+      const w = root.querySelector("#testTableWrap");
+      if (!tests.length) { w.innerHTML = emptyMsg("No tests yet — click 'New Test' to create one"); return; }
+      w.innerHTML = `<div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Title</th><th>Subject</th><th>Date</th><th>Timer</th><th>Q's</th><th>Status</th><th></th></tr></thead>
+        <tbody>${tests.map(t=>`
+          <tr data-testid="test-row-${esc(t.testId)}">
+            <td><b>${esc(t.title)}</b><br/><small class="mute2 tiny mono">${esc(t.testId)}</small></td>
+            <td>${esc(t.subject)}</td><td>${esc(fmtDay(t.date))}</td>
+            <td>${esc(t.timer)}m</td><td>${(t.questions||[]).length}</td>
+            <td><span class="badge ${t.status==='active'?'green':'red'}">${esc(t.status)}</span></td>
+            <td style="text-align:right">
+              <button class="btn btn-ghost btn-sm edit-t" data-id="${esc(t.testId)}">Edit</button>
+              <button class="btn btn-danger btn-sm del-t" data-id="${esc(t.testId)}">Delete</button>
+            </td>
+          </tr>`).join("")}</tbody></table></div>`;
+      w.querySelectorAll(".edit-t").forEach(b => b.onclick = () => testForm(tests.find(t=>t.testId===b.dataset.id)));
+      w.querySelectorAll(".del-t").forEach(b => b.onclick = async () => {
+        if (!confirm("Delete this test?")) return;
+        try { await api("crudTest", { op: "delete", testId: b.dataset.id }); toast("Deleted","success"); refresh(); }
+        catch(e){ toast(e.message,"error"); }
+      });
+    } catch (e) { root.querySelector("#testTableWrap").innerHTML = errorMsg(e.message); }
+  }
+
+  function testForm(existing){
+    const modal = openModal(existing?"Edit Test":"New Test", `
+      <form id="tf" class="form-grid">
+        <div class="row">
+          <div class="field"><label class="label">Title</label><input class="input" name="title" required value="${esc(existing?.title||"")}" data-testid="test-title"/></div>
+          <div class="field"><label class="label">Subject</label><input class="input" name="subject" required value="${esc(existing?.subject||"")}" data-testid="test-subject"/></div>
+        </div>
+        <div class="row">
+          <div class="field"><label class="label">Date (YYYY-MM-DD)</label><input class="input" name="date" placeholder="2026-02-15" value="${esc(existing?.date||"")}" data-testid="test-date"/></div>
+          <div class="field"><label class="label">Timer (min)</label><input class="input" type="number" name="timer" min="1" value="${existing?.timer||15}" data-testid="test-timer"/></div>
+        </div>
+        <div class="field"><label class="label">Status</label>
+          <select class="select" name="status" data-testid="test-status">
+            <option value="active" ${existing?.status==="active"?"selected":""}>Active</option>
+            <option value="inactive" ${existing?.status==="inactive"?"selected":""}>Inactive</option>
+          </select>
+        </div>
+        <div class="field">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <label class="label">Questions</label>
+            <div style="display:flex;gap:6px">
+              <button type="button" class="btn btn-ghost btn-sm" id="toggleJsonMode">⬡ Paste JSON</button>
+            </div>
+          </div>
+          <div id="qBuilderWrap"></div>
+          <div id="jsonModeWrap" class="hidden">
+            <textarea class="textarea" id="jsonPasteArea" style="min-height:160px;font-size:.78rem" placeholder='Paste JSON array: [{"q":"...","options":["A","B","C","D"],"answer":0}]'></textarea>
+            <button type="button" class="btn btn-ghost btn-sm" id="parseJsonBtn" style="margin-top:6px">⟳ Parse & Load into Builder</button>
+          </div>
+          <div style="margin-top:8px">
+            <span class="muted tiny">Preview JSON: </span>
+            <div class="json-preview" id="jsonPreview">[]</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button type="button" class="btn btn-ghost" id="cx">Cancel</button>
+          <button type="submit" class="btn btn-green" data-testid="btn-save-test">Save Test</button>
+        </div>
+      </form>`);
+    modal.querySelector("#cx").onclick = () => modal.remove();
+
+    // ── Question Builder logic ──
+    let builderQs = JSON.parse(JSON.stringify(existing?.questions || []));
+    // Ensure at least 1 blank question
+    if (!builderQs.length) builderQs.push({ q: "", q_hi: "", options: ["","","",""], answer: 0 });
+
+    function renderBuilder() {
+      const wrap = modal.querySelector("#qBuilderWrap");
+      wrap.innerHTML = "";
+      builderQs.forEach((bq, qi) => {
+        const block = document.createElement("div");
+        block.className = "qb-wrap";
+        block.innerHTML = `
+          <div class="qb-head">
+            <span>Q${qi+1}</span>
+            <button type="button" class="btn btn-danger btn-sm rm-q" data-qi="${qi}">✕ Remove</button>
+          </div>
+          <div class="qb-body">
+            <div class="field"><label class="label" style="font-size:.7rem">Question (English)</label>
+              <input class="input" placeholder="Type question…" value="${esc(bq.q||"")}" data-qi="${qi}" data-field="q"/>
+            </div>
+            <div class="field"><label class="label" style="font-size:.7rem">Question (Hindi — optional)</label>
+              <input class="input" placeholder="हिंदी में प्रश्न…" value="${esc(bq.q_hi||"")}" data-qi="${qi}" data-field="q_hi"/>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+              <span class="label" style="font-size:.7rem;margin:0">Options</span>
+              <span class="muted tiny">(select ✓ for correct answer)</span>
+            </div>
+            ${(bq.options||["","","",""]).map((op,oi) => `
+              <div class="qb-option-row">
+                <div class="letter">${String.fromCharCode(65+oi)}</div>
+                <input class="input" placeholder="Option ${String.fromCharCode(65+oi)}" value="${esc(op)}" data-qi="${qi}" data-oi="${oi}" data-field="option"/>
+                <input type="radio" class="correct-radio" name="correct_${qi}" value="${oi}" ${Number(bq.answer)===oi?"checked":""} data-qi="${qi}" title="Mark as correct"/>
+                ${Number(bq.answer)===oi?`<span class="qb-correct-label">✓ Correct</span>`:""}
+              </div>`).join("")}
+          </div>`;
+        wrap.appendChild(block);
+      });
+
+      // Add-question button
+      const addBtn = document.createElement("button");
+      addBtn.type = "button";
+      addBtn.className = "qb-add-q";
+      addBtn.textContent = "+ Add Question";
+      addBtn.onclick = () => {
+        builderQs.push({ q: "", q_hi: "", options: ["","","",""], answer: 0 });
+        renderBuilder();
+      };
+      wrap.appendChild(addBtn);
+
+      // Remove question
+      wrap.querySelectorAll(".rm-q").forEach(b => b.onclick = () => {
+        if (builderQs.length <= 1) { toast("Need at least 1 question","error"); return; }
+        builderQs.splice(Number(b.dataset.qi), 1);
+        renderBuilder();
+      });
+
+      // Sync inputs → builderQs live
+      wrap.querySelectorAll("input[data-field='q']").forEach(inp => inp.oninput = () => {
+        builderQs[Number(inp.dataset.qi)].q = inp.value; updatePreview();
+      });
+      wrap.querySelectorAll("input[data-field='q_hi']").forEach(inp => inp.oninput = () => {
+        builderQs[Number(inp.dataset.qi)].q_hi = inp.value; updatePreview();
+      });
+      wrap.querySelectorAll("input[data-field='option']").forEach(inp => inp.oninput = () => {
+        builderQs[Number(inp.dataset.qi)].options[Number(inp.dataset.oi)] = inp.value; updatePreview();
+      });
+      wrap.querySelectorAll("input.correct-radio").forEach(r => r.onchange = () => {
+        builderQs[Number(r.dataset.qi)].answer = Number(r.value); renderBuilder();
+      });
+      updatePreview();
+    }
+
+    function updatePreview() {
+      const prev = modal.querySelector("#jsonPreview");
+      if (prev) prev.textContent = JSON.stringify(builderQs, null, 2);
+    }
+
+    renderBuilder();
+
+    // Toggle JSON paste mode
+    modal.querySelector("#toggleJsonMode").onclick = () => {
+      const jw = modal.querySelector("#jsonModeWrap");
+      jw.classList.toggle("hidden");
+    };
+    modal.querySelector("#parseJsonBtn").onclick = () => {
+      const raw = modal.querySelector("#jsonPasteArea").value.trim();
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) throw new Error("Must be a JSON array");
+        builderQs = parsed.map(q => ({
+          q: q.q || q.text || q.question || "",
+          q_hi: q.q_hi || "",
+          options: q.options || q.choices || ["","","",""],
+          options_hi: q.options_hi || [],
+          answer: q.answer !== undefined ? Number(q.answer) : 0
+        }));
+        modal.querySelector("#jsonModeWrap").classList.add("hidden");
+        renderBuilder();
+        toast("Loaded " + builderQs.length + " questions from JSON", "success");
+      } catch(err) { toast("Invalid JSON: " + err.message, "error"); }
+    };
+
+    modal.querySelector("#tf").onsubmit = async (e) => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      const qs = builderQs;
+      if (!qs.length) { toast("At least one question is required","error"); return; }
+      const badQ = qs.findIndex(q => !q.q.trim() || !q.options.some(o => o.trim()) || q.answer === undefined);
+      if (badQ >= 0) { toast(`Question ${badQ+1}: fill in the question text and at least one option`,"error"); return; }
+      const payload = { title: f.get("title"), subject: f.get("subject"), date: f.get("date"), timer: Number(f.get("timer")), status: f.get("status"), questions: qs };
+      try {
+        if (existing) await api("crudTest", Object.assign({ op:"update", testId: existing.testId }, payload));
+        else await api("crudTest", Object.assign({ op:"create" }, payload));
+        toast("Saved","success"); modal.remove(); refresh();
+      } catch (err) { toast(err.message,"error"); }
+    };
+  }
+}
+
+/* --- ADMIN Students --- */
+async function adminStudents(root){
+  root.innerHTML = `<h1>Students</h1><p class="muted" style="margin-bottom:16px">All registered students</p>
+    <div class="toolbar">
+      <input class="input" id="q" placeholder="Search name / username / roll…" data-testid="student-search"/>
+      <select class="select" id="fc" data-testid="student-class-filter"><option value="">All classes</option><option>9</option><option>10</option><option>11</option><option>12</option><option>Competitive</option></select>
+    </div>
+    <div id="studWrap">${skeletonList(3)}</div>`;
+  let all = [];
+  async function load(){
+    try { const r = await api("crudStudent", { op:"list" }); all = r.students || []; draw(); }
+    catch(e){ root.querySelector("#studWrap").innerHTML = errorMsg(e.message); }
+  }
+  function draw(){
+    const q = root.querySelector("#q").value.toLowerCase();
+    const c = root.querySelector("#fc").value;
+    const list = all.filter(s => (!q || (s.name+s.username+s.rollNo).toLowerCase().includes(q)) && (!c || String(s.klass)===c));
+    root.querySelector("#studWrap").innerHTML = list.length ? `<div class="table-wrap"><table class="data-table">
+      <thead><tr><th>Roll</th><th>Name</th><th>Username</th><th>Class</th><th>Registered</th><th></th></tr></thead>
+      <tbody>${list.map(s=>`<tr>
+        <td class="mono">${esc(s.rollNo)}</td><td><b>${esc(s.name)}</b></td>
+        <td>${esc(s.username)}</td><td>${esc(s.klass)}</td><td>${esc(fmtDate(s.registeredOn))}</td>
+        <td style="text-align:right"><button class="btn btn-ghost btn-sm rp" data-r="${esc(s.rollNo)}">Reset pass</button></td>
+      </tr>`).join("")}</tbody></table></div>` : emptyMsg("No students match");
+    root.querySelectorAll(".rp").forEach(b => b.onclick = async () => {
+      const np = prompt("New password:", "changeme123"); if (!np) return;
+      try { await api("crudStudent", { op:"resetPassword", rollNo: b.dataset.r, newPassword: np }); toast("Password reset","success"); }
+      catch(e){ toast(e.message,"error"); }
+    });
+  }
+  root.querySelector("#q").oninput = draw;
+  root.querySelector("#fc").onchange = draw;
+  load();
+}
+
+/* --- ADMIN Feed --- */
+async function adminFeed(root){
+  root.innerHTML = `<h1>Feed Manager</h1><p class="muted" style="margin-bottom:16px">Announcements, classes, PDFs, banner</p>
+    <div class="glass" style="padding:18px;margin-bottom:22px">
+      <h3 style="margin-bottom:12px">Add Item</h3>
+      <form id="ff" class="form-grid">
+        <div class="row">
+          <div class="field"><label class="label">Type</label>
+            <select class="select" name="type" data-testid="feed-type"><option value="announcement">Announcement</option><option value="class">YouTube class</option><option value="pdf">PDF</option></select>
+          </div>
+          <div class="field"><label class="label">Title</label><input class="input" name="title" required data-testid="feed-title"/></div>
+        </div>
+        <div class="field"><label class="label">URL (YouTube / PDF link)</label><input class="input" name="url" data-testid="feed-url"/></div>
+        <div class="field"><label class="label">Description</label><input class="input" name="description" data-testid="feed-desc"/></div>
+        <button class="btn btn-primary" type="submit" data-testid="btn-add-feed">Post</button>
+      </form>
+    </div>
+
+    <div class="glass" style="padding:18px;margin-bottom:22px">
+      <h3 style="margin-bottom:12px">Home Banner &amp; Announcement</h3>
+      <div class="form-grid">
+        <div class="field"><label class="label">Banner Image URL</label>
+          <div style="display:flex;gap:8px"><input class="input" id="banner" data-testid="banner-url"/><button class="btn btn-green btn-sm" id="saveBanner">Save</button></div>
+        </div>
+        <div class="field"><label class="label">Announcement (top of home)</label>
+          <div style="display:flex;gap:8px"><input class="input" id="ann" data-testid="ann-text"/><button class="btn btn-green btn-sm" id="saveAnn">Save</button></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-bottom:12px">Current items</h3>
+    <div id="feedList">${skeletonList(3)}</div>`;
+  root.querySelector("#ff").onsubmit = async (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    try {
+      await api("crudFeed", { op:"create", type: f.get("type"), title: f.get("title"), url: f.get("url"), description: f.get("description") });
+      toast("Posted","success"); e.target.reset(); load();
+    } catch(err){ toast(err.message,"error"); }
+  };
+  root.querySelector("#saveBanner").onclick = async () => {
+    try { await api("crudFeed", { op:"setBanner", bannerURL: root.querySelector("#banner").value }); toast("Banner updated","success"); } catch(e){ toast(e.message,"error"); }
+  };
+  root.querySelector("#saveAnn").onclick = async () => {
+    try { await api("crudFeed", { op:"setAnnouncement", announcement: root.querySelector("#ann").value }); toast("Announcement updated","success"); } catch(e){ toast(e.message,"error"); }
+  };
+  async function load(){
+    try {
+      const { feed = [] } = await api("crudFeed", { op:"list" });
+      const w = root.querySelector("#feedList");
+      w.innerHTML = feed.length ? feed.map(f => `
+        <div class="test-row">
+          <div class="meta"><b>${esc(f.Title||"Untitled")}</b><small>${esc(f.Type)} · ${esc(fmtDate(f.PostedOn))} · ${esc(f.Description||"")}</small></div>
+          <button class="btn btn-danger btn-sm delF" data-t="${esc(f.Title||"")}" data-p="${esc(f.PostedOn||"")}">Delete</button>
+        </div>`).join("") : emptyMsg("No feed items yet");
+      w.querySelectorAll(".delF").forEach(b => b.onclick = async () => {
+        if (!confirm("Delete this item?")) return;
+        try { await api("crudFeed", { op:"delete", title: b.dataset.t, postedOn: b.dataset.p }); toast("Deleted","success"); load(); } catch(e){ toast(e.message,"error"); }
+      });
+    } catch(e){ root.querySelector("#feedList").innerHTML = errorMsg(e.message); }
+  }
+  load();
+}
+
+/* --- ADMIN Doubts --- */
+async function adminDoubts(root){
+  root.innerHTML = `<h1>Doubt Center</h1><p class="muted" style="margin-bottom:16px">Reply to student doubts</p>
+    <div class="toolbar">
+      <select class="select" id="fs" data-testid="doubts-filter"><option value="">All statuses</option><option value="open">Open</option><option value="replied">Replied</option><option value="resolved">Resolved</option></select>
+    </div>
+    <div id="dList">${skeletonList(3)}</div>`;
+  let all = [];
+  async function load(){
+    try { const r = await api("crudDoubt", { op:"list" }); all = r.doubts || []; draw(); }
+    catch(e){ root.querySelector("#dList").innerHTML = errorMsg(e.message); }
+  }
+  function draw(){
+    const st = root.querySelector("#fs").value;
+    const list = all.filter(d => !st || String(d.Status).toLowerCase() === st);
+    const w = root.querySelector("#dList");
+    if (!list.length) { w.innerHTML = emptyMsg("No doubts"); return; }
+    w.innerHTML = list.map(d => `
+      <div class="doubt-item" data-testid="admin-doubt">
+        <div class="top">
+          <div><span class="badge purple">${esc(d.Subject||"General")}</span> · <b>${esc(d.Name)}</b> <small class="mute2 tiny">(${esc(d.RollNo)})</small></div>
+          <span class="badge ${String(d.Status).toLowerCase()==='resolved'?'green':String(d.Status).toLowerCase()==='replied'?'amber':'red'}">${esc(d.Status)}</span>
+        </div>
+        <div class="q">${esc(d.Question)}</div>
+        <small class="mute2 tiny">Posted ${esc(fmtDate(d.PostedOn))}</small>
+        ${d.Reply?`<div class="reply">${esc(d.Reply)}<br/><small class="mute2 tiny">Replied ${esc(fmtDate(d.RepliedOn))}</small></div>`:""}
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+          <input class="input rp" placeholder="Write a reply…" value="${esc(d.Reply||"")}" style="flex:1;min-width:200px" data-testid="admin-reply-input"/>
+          <button class="btn btn-primary btn-sm sr" data-id="${esc(d.DoubtID)}" data-testid="btn-send-reply">Reply</button>
+          ${String(d.Status).toLowerCase()!=='resolved'?`<button class="btn btn-green btn-sm mr" data-id="${esc(d.DoubtID)}">Mark resolved</button>`:""}
+        </div>
+      </div>`).join("");
+    w.querySelectorAll(".sr").forEach(b => b.onclick = async () => {
+      const txt = b.parentElement.querySelector(".rp").value;
+      try { await api("crudDoubt", { op:"reply", doubtId: b.dataset.id, reply: txt, status: "replied" }); toast("Reply sent","success"); load(); }
+      catch(e){ toast(e.message,"error"); }
+    });
+    w.querySelectorAll(".mr").forEach(b => b.onclick = async () => {
+      try { await api("crudDoubt", { op:"resolve", doubtId: b.dataset.id }); toast("Marked resolved","success"); load(); }
+      catch(e){ toast(e.message,"error"); }
+    });
+  }
+  root.querySelector("#fs").onchange = draw;
+  load();
+}
+
+/* --- ADMIN Results --- */
+async function adminResults(root){
+  root.innerHTML = `<h1>Results</h1><p class="muted" style="margin-bottom:16px">Filter and export</p>
+    <div class="toolbar">
+      <input class="input" id="ftest" placeholder="Filter by TestID…" data-testid="filter-test"/>
+      <select class="select" id="fclass" data-testid="filter-class"><option value="">All classes</option><option>9</option><option>10</option><option>11</option><option>12</option><option>Competitive</option></select>
+      <input class="input" id="froll" placeholder="Filter by RollNo…" data-testid="filter-roll"/>
+      <button class="btn btn-primary btn-sm" id="apply">Apply</button>
+      <div class="spacer"></div>
+      <button class="btn btn-green btn-sm" id="csv" data-testid="btn-export-csv">Export CSV</button>
+    </div>
+    <div id="resWrap">${skeletonList(3)}</div>`;
+  let rows = [];
+  async function load(){
+    const testId = root.querySelector("#ftest").value.trim();
+    const klass  = root.querySelector("#fclass").value;
+    const rollNo = root.querySelector("#froll").value.trim();
+    try {
+      const r = await api("exportResults", Object.assign({}, testId?{testId}:{}, klass?{klass}:{}, rollNo?{rollNo}:{}));
+      rows = r.results || [];
+      root.querySelector("#resWrap").innerHTML = rows.length ? `<div class="table-wrap"><table class="data-table">
+        <thead><tr><th>S.No</th><th>Date</th><th>Name</th><th>Roll</th><th>Class</th><th>Test</th><th>Score</th><th>%</th><th>Grade</th><th>Time</th></tr></thead>
+        <tbody>${rows.map(r=>`<tr>
+          <td>${esc(r["S.No"])}</td><td>${esc(r.Date)}</td><td><b>${esc(r.Name)}</b></td>
+          <td class="mono">${esc(r.RollNo)}</td><td>${esc(r.Class)}</td><td>${esc(r.Title)}</td>
+          <td>${esc(r.Score)}/${esc(r.Total)}</td><td><b>${esc(r["%"])}%</b></td>
+          <td><span class="badge">${esc(r.Grade)}</span></td><td>${esc(r.TimeFmt)}</td>
+        </tr>`).join("")}</tbody></table></div>` : emptyMsg("No results found");
+    } catch(e){ root.querySelector("#resWrap").innerHTML = errorMsg(e.message); }
+  }
+  root.querySelector("#apply").onclick = load;
+  root.querySelector("#csv").onclick = () => {
+    if (!rows.length) return toast("Nothing to export","error");
+    const headers = ["S.No","Date","Name","RollNo","Class","TestID","Title","Subject","Score","Total","%","Grade","TimeSec","TimeFmt","SubmittedOn"];
+    const csv = [headers.join(",")].concat(rows.map(r => headers.map(h => `"${String(r[h]==null?"":r[h]).replace(/"/g,'""')}"`).join(","))).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "chemveda-results.csv"; a.click();
+    toast("Downloaded","success");
+  };
+  load();
+}
+
+/* ==============================================================
+   Modal & Loading
+   ============================================================== */
+function openModal(title, bodyHtml){
+  const back = document.createElement("div");
+  back.className = "modal-back";
+  back.innerHTML = `<div class="modal glass"><div class="modal-head"><h3>${esc(title)}</h3><button class="btn-icon" id="mcx" data-testid="modal-close">✕</button></div><div id="mbody">${bodyHtml}</div></div>`;
+  document.body.appendChild(back);
+  back.querySelector("#mcx").onclick = () => back.remove();
+  back.onclick = (e) => { if (e.target === back) back.remove(); };
+  return back;
+}
+function showLoading(msg){
+  hideLoading();
+  const el = document.createElement("div");
+  el.className = "loading-full";
+  el.id = "loadingFull";
+  el.innerHTML = `<div style="text-align:center"><div id="lotL" style="width:180px;height:180px"></div><p class="muted" style="margin-top:-16px">${esc(msg||"Loading…")}</p></div>`;
+  document.body.appendChild(el);
+  lottieMount(el.querySelector("#lotL"), LOTTIE.loading);
+}
+function hideLoading(){ const el = document.getElementById("loadingFull"); if (el) el.remove(); }
+
+/* ==============================================================
+   Keyboard shortcut for admin (Ctrl+Shift+A)
+   ============================================================== */
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "a") {
+    if (state.route === "auth") { state.route = "admin-auth"; render(); }
+  }
+});
+
+/* ==============================================================
+   Boot
+   ============================================================== */
+(function boot(){
+  const s = store.get("student");
+  const a = store.get("admin");
+  if (location.hash === "#/admin" || location.hash === "#admin") {
+    if (a) { state.admin = a; state.route = "admin"; }
+    else state.route = "admin-auth";
+  } else if (s) {
+    state.student = s;
+    state.route = "app";
+    state.tab = store.get("activeTab") || "home";
+    // Restore in-progress quiz from localStorage
+    const resumeKeys = Object.keys(localStorage).filter(k => k.startsWith("resume_"));
+    if (resumeKeys.length) {
+      // find most recently started quiz
+      let latest = null;
+      resumeKeys.forEach(k => {
+        const q = store.get(k);
+        if (q && q.test && (!latest || q.startedAt > latest.startedAt)) latest = q;
+      });
+      if (latest) {
+        // Recalculate remaining time — if expired, don't restore
+        const elapsed = Math.floor((Date.now() - latest.startedAt) / 1000);
+        const timerSec = (latest.test.timer || 15) * 60;
+        if (elapsed < timerSec) {
+          state.quiz = Object.assign({ timerSec }, latest);
+        } else {
+          // Timer expired while away — auto-submit silently on next render
+          store.del("resume_" + latest.test.testId);
+        }
+      }
+    }
+  } else {
+    state.route = "auth";
+  }
+  render();
+})();
 </script>
 </body>
 </html>
