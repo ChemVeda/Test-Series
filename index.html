@@ -42,6 +42,13 @@
   </div>
 </header>
 
+<div class="announce-bar" id="announceBar" style="display:none">
+  <div class="announce-inner container">
+    <span id="announceText"></span>
+    <button id="announceClose" aria-label="Dismiss">✕</button>
+  </div>
+</div>
+
 <main id="top">
   <section class="hero" id="heroWrap">
     <canvas class="hero-canvas" id="chemCanvas"></canvas>
@@ -58,6 +65,37 @@
         <div class="stat-row" id="statRow">
           <span class="stat-chip"><span class="pulse-dot"></span><b id="liveCount">0</b>&nbsp;studying right now</span>
           <span class="stat-chip"><b id="totalCount">0</b>&nbsp;students on ChemVeda</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-pad" id="liveFeed" style="padding-bottom:20px">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Open to everyone</span>
+        <h2>What's happening right now — no login needed</h2>
+        <p>A live look at today's material. Sign in only when you're ready to attempt a test or track your own progress.</p>
+      </div>
+
+      <div class="pub-block">
+        <h3 class="pub-h">Study material</h3>
+        <div class="pub-grid" id="pubMaterialGrid">
+          <div class="pub-skel"></div><div class="pub-skel"></div><div class="pub-skel"></div>
+        </div>
+      </div>
+
+      <div class="pub-block">
+        <h3 class="pub-h">Announcements</h3>
+        <div class="pub-grid" id="pubAnnGrid">
+          <div class="pub-skel"></div><div class="pub-skel"></div>
+        </div>
+      </div>
+
+      <div class="pub-block">
+        <h3 class="pub-h">Live &amp; upcoming classes</h3>
+        <div class="pub-grid" id="pubClassGrid">
+          <div class="pub-skel"></div><div class="pub-skel"></div>
         </div>
       </div>
     </div>

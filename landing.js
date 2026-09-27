@@ -9,7 +9,7 @@
 
 /* Must match the API_URL constant near the top of app.html's <script>.
    If you ever redeploy the Google Apps Script web app, update BOTH places. */
-const API_URL = "https://script.google.com/macros/s/AKfycbzADm2wDZvEBr_6y6Gq77lfT4SRQ3dLcxPtMJMpFg5hUJSRrpXo90UYYzq8zmn20CmhZw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycby4ICRdQjun3jbsIVBmmeH7OB1a67upJ-KrPy3EbD132TGaQXy3sI5sJxW8nO3HoM76_Q/exec";
 
 /* --------------- Navigation to the app --------------- */
 function goToApp(tab, mode) {
@@ -299,8 +299,81 @@ function initChemAnimation(canvasId, wrapId) {
   requestAnimationFrame(loop);
 }
 
+/* ==============================================================
+   Public feed — Study Material, Announcements, Live & Upcoming
+   Classes, shown right on the homepage with no login required.
+   Same "getFeed" action app.html's Home tab uses; it's public
+   on the backend (no token check), so we can call it directly.
+   ============================================================== */
+function pubEsc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function pubFmtDate(s) { if (!s) return ""; try { return new Date(s).toLocaleDateString(undefined, { month: "short", day: "numeric" }); } catch (_) { return ""; } }
+
+function pubCard(f) {
+  const type = String(f.Type || "").toLowerCase();
+  const cls = type === "class" ? "yt" : type === "pdf" ? "pdf" : "ann";
+  const ic = type === "class" ? "▶" : type === "pdf" ? "📄" : "📢";
+  const url = f.URL || "";
+  const tag = url ? "a" : "div";
+  const hrefAttrs = url ? `href="${pubEsc(url)}" target="_blank" rel="noopener"` : "";
+  return `<${tag} class="pub-item" ${hrefAttrs}>
+    <div class="pub-icon ${cls}">${ic}</div>
+    <b>${pubEsc(f.Title || "Untitled")}</b>
+    ${f.Description ? `<small>${pubEsc(f.Description)}</small>` : ""}
+    <span class="pub-date">${pubEsc(pubFmtDate(f.PostedOn))}</span>
+  </${tag}>`;
+}
+function pubEmpty(msg) { return `<div class="pub-empty">${pubEsc(msg)}</div>`; }
+
+async function initPublicFeed() {
+  const materialGrid = document.getElementById("pubMaterialGrid");
+  const annGrid = document.getElementById("pubAnnGrid");
+  const classGrid = document.getElementById("pubClassGrid");
+  if (!materialGrid) return;
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "getFeed" })
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || "Couldn't load feed");
+
+    const feed = json.feed || [];
+    const config = json.config || {};
+
+    const material = feed.filter((f) => String(f.Type).toLowerCase() === "pdf");
+    const ann = feed.filter((f) => String(f.Type).toLowerCase() === "announcement");
+    const classes = feed.filter((f) => String(f.Type).toLowerCase() === "class");
+
+    materialGrid.innerHTML = material.length ? material.map(pubCard).join("") : pubEmpty("No study material posted yet.");
+    annGrid.innerHTML = ann.length ? ann.map(pubCard).join("") : pubEmpty("No announcements right now.");
+    classGrid.innerHTML = classes.length ? classes.map(pubCard).join("") : pubEmpty("No classes scheduled yet.");
+
+    if (config.announcement) {
+      const bar = document.getElementById("announceBar");
+      const text = document.getElementById("announceText");
+      const dismissedText = sessionStorage.getItem("cv_dismissed_announcement");
+      if (bar && text && dismissedText !== config.announcement) {
+        text.textContent = config.announcement;
+        bar.style.display = "block";
+        document.getElementById("announceClose").addEventListener("click", () => {
+          sessionStorage.setItem("cv_dismissed_announcement", config.announcement);
+          bar.style.display = "none";
+        });
+      }
+    }
+  } catch (e) {
+    const fail = pubEmpty("Couldn't load right now — please refresh.");
+    materialGrid.innerHTML = fail;
+    annGrid.innerHTML = fail;
+    classGrid.innerHTML = fail;
+  }
+}
+
 /* --------------- Boot --------------- */
 document.addEventListener("DOMContentLoaded", () => {
   initChemAnimation("chemCanvas", "heroWrap");
   initViewerStats();
+  initPublicFeed();
 });
