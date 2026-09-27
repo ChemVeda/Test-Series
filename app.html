@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#0a0616" />
 <title>ChemVeda Pro 2026-27</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -298,7 +298,7 @@ h3{font-size:1.1rem;font-weight:600}
    ChemVeda Pro 2026-27 — Client
    ============================================================== */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzADm2wDZvEBr_6y6Gq77lfT4SRQ3dLcxPtMJMpFg5hUJSRrpXo90UYYzq8zmn20CmhZw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzNOJRP3BZaDsfqFXljj6VskcgXyiqJi9DGHjtnIvnupCA1vfb0s_iBAzOnthViO6kv/exec";
 
 /* Lottie animation URLs (LottieFiles public CDN) */
 const LOTTIE = {
@@ -341,10 +341,16 @@ async function api(action, data = {}) {
   const body = JSON.stringify(payload);
   const res = await fetch(API_URL, {
     method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoid preflight
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
     body
   });
-  const json = await res.json();
+  if (!res.ok) {
+    const t = await res.text().catch(()=> "");
+    throw new Error(t.slice(0,300) || ("Network error " + res.status));
+  }
+  let json;
+  const txt = await res.text();
+  try { json = JSON.parse(txt); } catch(_) { throw new Error("Invalid server response"); }
   if (!json.ok) throw new Error(json.error || "API error");
   return json;
 }
@@ -362,7 +368,10 @@ function toast(msg, kind = "") {
 }
 
 /* --------------- Lottie helper --------------- */
-function lottieMount(container, url, opts = {}) {
+function lottieMount(container, url, opts = {
+  if (!container) return null;
+  if (typeof lottie === "undefined") { try { container.innerHTML = `<div style="padding:18px;text-align:center;color:var(--text-dim)">✨</div>`; } catch(_){} return null; }
+}) {
   if (!container) return;
   container.innerHTML = "";
   try {
@@ -421,7 +430,7 @@ function renderAuth(root) {
   const pending = sessionStorage.getItem("pendingTab");
   root.innerHTML = `
     <a class="admin-trigger" href="index.html" title="Back to ChemVeda home" data-testid="home-link" style="left:16px;right:auto;text-decoration:none">${icon("home")}</a>
-    <button class="admin-trigger" id="adminGear" title="Admin login" data-testid="admin-gear">${icon("settings")}</button>
+    <button type="button" class="admin-trigger" id="adminGear" title="Admin login" data-testid="admin-gear">${icon("settings")}</button>
     <div class="auth-wrap">
       <div class="auth-card glass">
         <div class="brand">
@@ -431,8 +440,8 @@ function renderAuth(root) {
         <p class="muted" style="text-align:center;margin-bottom:24px;font-size:.9rem">${pending ? "Sign in to continue to " + esc(pending.charAt(0).toUpperCase()+pending.slice(1)) : "Learn. Practice. Rise."}</p>
 
         <div class="auth-tabs" role="tablist">
-          <button class="auth-tab ${mode==='login'?'active':''}" data-testid="tab-login" data-mode="login">Log in</button>
-          <button class="auth-tab ${mode==='register'?'active':''}" data-testid="tab-register" data-mode="register">Register</button>
+          <button type="button" class="auth-tab ${mode==='login'?'active':''}" data-testid="tab-login" data-mode="login">Log in</button>
+          <button type="button" class="auth-tab ${mode==='register'?'active':''}" data-testid="tab-register" data-mode="register">Register</button>
         </div>
 
         <form class="form-grid" id="authForm" autocomplete="off">
@@ -484,7 +493,7 @@ function renderAuth(root) {
    ============================================================== */
 function renderAdminAuth(root){
   root.innerHTML = `
-    <button class="admin-trigger" id="backBtn" title="Back">✕</button>
+    <button type="button" class="admin-trigger" id="adminAuthBackBtn" title="Back">✕</button>
     <div class="auth-wrap">
       <div class="auth-card glass">
         <div class="brand">
@@ -533,17 +542,17 @@ function renderStudentApp(root){
         </div>
         <div style="display:flex;gap:8px">
           <a class="btn-icon" href="index.html" title="ChemVeda home" data-testid="btn-site-home">${icon("home")}</a>
-          <button class="btn-icon" id="logoutBtn" title="Log out" data-testid="btn-logout" style="color:var(--red);border-color:rgba(248,113,113,.25)">${icon("logout")}</button>
+          <button type="button" class="btn-icon" id="logoutBtn" title="Log out" data-testid="btn-logout" style="color:var(--red);border-color:rgba(248,113,113,.25)">${icon("logout")}</button>
         </div>
       </div>
     </header>
     <main class="container" style="padding-top:20px" id="studentMain"></main>
     <nav class="bottom-nav" role="tablist">
-      <button class="nav-btn ${state.tab==='home'?'active':''}" data-tab="home" data-testid="nav-home">${icon("home")}<span>Home</span></button>
-      <button class="nav-btn ${state.tab==='tests'?'active':''}" data-tab="tests" data-testid="nav-tests">${icon("test")}<span>Tests</span></button>
-      <button class="nav-btn ${state.tab==='doubts'?'active':''}" data-tab="doubts" data-testid="nav-doubts">${icon("doubt")}<span>Doubts</span></button>
-      <button class="nav-btn ${state.tab==='progress'?'active':''}" data-tab="progress" data-testid="nav-progress">${icon("trend")}<span>Progress</span></button>
-      <button class="nav-btn ${state.tab==='profile'?'active':''}" data-tab="profile" data-testid="nav-profile">${icon("user")}<span>Profile</span></button>
+      <button type="button" class="nav-btn ${state.tab==='home'?'active':''}" data-tab="home" data-testid="nav-home">${icon("home")}<span>Home</span></button>
+      <button type="button" class="nav-btn ${state.tab==='tests'?'active':''}" data-tab="tests" data-testid="nav-tests">${icon("test")}<span>Tests</span></button>
+      <button type="button" class="nav-btn ${state.tab==='doubts'?'active':''}" data-tab="doubts" data-testid="nav-doubts">${icon("doubt")}<span>Doubts</span></button>
+      <button type="button" class="nav-btn ${state.tab==='progress'?'active':''}" data-tab="progress" data-testid="nav-progress">${icon("trend")}<span>Progress</span></button>
+      <button type="button" class="nav-btn ${state.tab==='profile'?'active':''}" data-tab="profile" data-testid="nav-profile">${icon("user")}<span>Profile</span></button>
     </nav>`;
 
   root.querySelector("#logoutBtn").onclick = () => {
@@ -680,12 +689,12 @@ async function renderTests(root){
           <p class="muted" style="margin:6px 0 14px">${esc(today.subject)} · ${today.timer} min · ${today.questionsCount} questions</p>
           ${takenIds.has(today.testId)
             ? `<span class="badge green" style="padding:10px 16px;font-size:.85rem">✓ Already Submitted</span>`
-            : `<button class="btn btn-green" id="startToday" data-testid="btn-start-today">Start Test →</button>`
+            : `<button type="button" class="btn btn-green" id="startToday" data-testid="btn-start-today">Start Test →</button>`
           }
         </div>` : ""}
 
       <div class="section-header"><h2>All Tests</h2>
-        <button class="btn btn-ghost btn-sm" id="lbBtn" data-testid="btn-leaderboard">🏆 Leaderboard</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="lbBtn" data-testid="btn-leaderboard">🏆 Leaderboard</button>
       </div>
       <div id="testList"></div>
     `;
@@ -717,7 +726,7 @@ async function renderTests(root){
           <div style="display:flex;gap:8px;align-items:center">
             ${takenIds.has(t.testId)
               ? `<span class="badge green">✓ Attempted</span>`
-              : `<button class="btn btn-primary btn-sm start-test" data-id="${esc(t.testId)}" data-testid="btn-start-${esc(t.testId)}">Start</button>`
+              : `<button type="button" class="btn btn-primary btn-sm start-test" data-id="${esc(t.testId)}" data-testid="btn-start-${esc(t.testId)}">Start</button>`
             }
           </div>
         </div>`).join("");
@@ -737,7 +746,7 @@ async function openLeaderboard(){
         <option value="">All classes</option>
         <option>9</option><option>10</option><option>11</option><option>12</option><option>Competitive</option>
       </select>
-      <button class="btn btn-ghost btn-sm" id="lbRefresh">Refresh</button>
+      <button type="button" class="btn btn-ghost btn-sm" id="lbRefresh">Refresh</button>
     </div>
     <div id="lbBody">${skeletonList(4)}</div>`);
   async function load(){
@@ -798,14 +807,14 @@ function renderQuiz(root){
       </div>
 
       <div class="quiz-controls">
-        <button class="btn btn-ghost" id="prev" ${cur===0?'disabled':''} data-testid="btn-prev">← Prev</button>
+        <button type="button" class="btn btn-ghost" id="prev" ${cur===0?'disabled':''} data-testid="btn-prev">← Prev</button>
         ${cur === q.test.questions.length - 1
-          ? `<button class="btn btn-green" id="submit" data-testid="btn-submit-quiz">Submit ✓</button>`
-          : `<button class="btn btn-primary" id="next" data-testid="btn-next">Next →</button>`}
+          ? `<button type="button" class="btn btn-green" id="submit" data-testid="btn-submit-quiz">Submit ✓</button>`
+          : `<button type="button" class="btn btn-primary" id="next" data-testid="btn-next">Next →</button>`}
       </div>
 
       <div class="palette" data-testid="quiz-palette">${q.test.questions.map((_,i)=>`
-        <button class="pal-btn ${q.answers[i]!=null?'answered':''} ${i===cur?'current':''}" data-i="${i}">${i+1}</button>
+        <button type="button" class="pal-btn ${q.answers[i]!=null?'answered':''} ${i===cur?'current':''}" data-i="${i}">${i+1}</button>
       `).join("")}</div>
     </div>`;
 
@@ -856,8 +865,8 @@ function confirmSubmit(){
   const modal = openModal("Submit test?", `
     <p class="muted" style="margin-bottom:16px">${unans>0 ? `You have <b style="color:#fecaca">${unans}</b> unanswered question(s). ` : ""}Are you sure you want to submit?</p>
     <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button class="btn btn-ghost" id="cx">Cancel</button>
-      <button class="btn btn-green" id="cf" data-testid="btn-confirm-submit">Submit</button>
+      <button type="button" class="btn btn-ghost" id="cx">Cancel</button>
+      <button type="button" class="btn btn-green" id="cf" data-testid="btn-confirm-submit">Submit</button>
     </div>`);
   modal.querySelector("#cx").onclick = () => modal.remove();
   modal.querySelector("#cf").onclick = () => { modal.remove(); submitQuiz(false); };
@@ -912,8 +921,8 @@ function renderResult(root){
         </div>
         <div id="celeb" style="width:220px;margin:0 auto"></div>
         <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap">
-          <button class="btn btn-ghost" id="backBtn">Back to Tests</button>
-          <button class="btn btn-primary" id="reviewBtn" data-testid="btn-review">See Review</button>
+          <button class="btn btn-ghost" id="resultBackBtn" type="button">Back to Tests</button>
+          <button type="button" class="btn btn-primary" id="reviewBtn" data-testid="btn-review">See Review</button>
         </div>
       </div>
       <div id="reviewBody" class="hidden" style="margin-top:20px"></div>
@@ -1042,7 +1051,7 @@ async function renderProgress(root){
       </div>` : ""}
     `;
     const trendCtx = root.querySelector("#trendChart");
-    new Chart(trendCtx, {
+    try { new Chart(trendCtx, {
       type: "line",
       data: {
         labels: stats.trend.map(t => fmtDay(t.date)),
@@ -1060,7 +1069,8 @@ async function renderProgress(root){
         }
       }
     });
-    if (stats.subjectBreakdown.length) {
+     } catch(e){ console.warn("Chart failed", e); }
+if (stats.subjectBreakdown.length) {
       new Chart(root.querySelector("#subjectChart"), {
         type: "bar",
         data: {
@@ -1180,7 +1190,7 @@ function renderAdmin(root){
         <div id="adminNav"></div>
         <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:12px">
           <div class="muted tiny" style="padding:0 14px 6px">${esc(state.admin.name)}</div>
-          <button class="admin-nav-btn" id="adminLogout" data-testid="btn-admin-logout">${icon("logout")}<span>Log out</span></button>
+          <button type="button" class="admin-nav-btn" id="adminLogout" data-testid="btn-admin-logout">${icon("logout")}<span>Log out</span></button>
         </div>
       </aside>
       <main class="admin-main" id="adminMain"></main>
@@ -1195,7 +1205,7 @@ function renderAdmin(root){
     ["results","Results","🏆"],
     ["profile","Profile","🔑"]
   ];
-  nav.innerHTML = items.map(([k,l,i]) => `<button class="admin-nav-btn ${state.adminTab===k?'active':''}" data-tab="${k}" data-testid="admin-nav-${k}">${i} <span>${l}</span></button>`).join("");
+  nav.innerHTML = items.map(([k,l,i]) => `<button type="button" class="admin-nav-btn ${state.adminTab===k?'active':''}" data-tab="${k}" data-testid="admin-nav-${k}">${i} <span>${l}</span></button>`).join("");
   nav.querySelectorAll(".admin-nav-btn").forEach(b => b.onclick = () => { state.adminTab = b.dataset.tab; render(); });
   root.querySelector("#adminLogout").onclick = () => { store.del("admin"); state.admin = null; state.route = "auth"; render(); toast("Signed out"); };
 
@@ -1277,7 +1287,7 @@ async function adminTests(root){
   root.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
       <div><h1>Test Manager</h1><p class="muted">Create, edit, and manage tests</p></div>
-      <button class="btn btn-primary" id="addTest" data-testid="btn-add-test">+ New Test</button>
+      <button type="button" class="btn btn-primary" id="addTest" data-testid="btn-add-test">+ New Test</button>
     </div>
     <div id="testTableWrap">${skeletonList(3)}</div>`;
   root.querySelector("#addTest").onclick = () => testForm(null);
@@ -1296,8 +1306,8 @@ async function adminTests(root){
             <td>${esc(t.timer)}m</td><td>${(t.questions||[]).length}</td>
             <td><span class="badge ${t.status==='active'?'green':'red'}">${esc(t.status)}</span></td>
             <td style="text-align:right">
-              <button class="btn btn-ghost btn-sm edit-t" data-id="${esc(t.testId)}">Edit</button>
-              <button class="btn btn-danger btn-sm del-t" data-id="${esc(t.testId)}">Delete</button>
+              <button type="button" class="btn btn-ghost btn-sm edit-t" data-id="${esc(t.testId)}">Edit</button>
+              <button type="button" class="btn btn-danger btn-sm del-t" data-id="${esc(t.testId)}">Delete</button>
             </td>
           </tr>`).join("")}</tbody></table></div>`;
       w.querySelectorAll(".edit-t").forEach(b => b.onclick = () => testForm(tests.find(t=>t.testId===b.dataset.id)));
@@ -1516,7 +1526,7 @@ async function adminStudents(root){
       <tbody>${list.map(s=>`<tr>
         <td class="mono">${esc(s.rollNo)}</td><td><b>${esc(s.name)}</b></td>
         <td>${esc(s.username)}</td><td>${esc(s.klass)}</td><td>${esc(fmtDate(s.registeredOn))}</td>
-        <td style="text-align:right"><button class="btn btn-ghost btn-sm rp" data-r="${esc(s.rollNo)}">Reset pass</button></td>
+        <td style="text-align:right"><button type="button" class="btn btn-ghost btn-sm rp" data-r="${esc(s.rollNo)}">Reset pass</button></td>
       </tr>`).join("")}</tbody></table></div>` : emptyMsg("No students match");
     root.querySelectorAll(".rp").forEach(b => b.onclick = async () => {
       const np = prompt("New password:", "changeme123"); if (!np) return;
@@ -1551,10 +1561,10 @@ async function adminFeed(root){
       <h3 style="margin-bottom:12px">Home Banner &amp; Announcement</h3>
       <div class="form-grid">
         <div class="field"><label class="label">Banner Image URL</label>
-          <div style="display:flex;gap:8px"><input class="input" id="banner" data-testid="banner-url"/><button class="btn btn-green btn-sm" id="saveBanner">Save</button></div>
+          <div style="display:flex;gap:8px"><input class="input" id="banner" data-testid="banner-url"/><button type="button" class="btn btn-green btn-sm" id="saveBanner">Save</button></div>
         </div>
         <div class="field"><label class="label">Announcement (top of home)</label>
-          <div style="display:flex;gap:8px"><input class="input" id="ann" data-testid="ann-text"/><button class="btn btn-green btn-sm" id="saveAnn">Save</button></div>
+          <div style="display:flex;gap:8px"><input class="input" id="ann" data-testid="ann-text"/><button type="button" class="btn btn-green btn-sm" id="saveAnn">Save</button></div>
         </div>
       </div>
     </div>
@@ -1582,7 +1592,7 @@ async function adminFeed(root){
       w.innerHTML = feed.length ? feed.map(f => `
         <div class="test-row">
           <div class="meta"><b>${esc(f.Title||"Untitled")}</b><small>${esc(f.Type)} · ${esc(fmtDate(f.PostedOn))} · ${esc(f.Description||"")}</small></div>
-          <button class="btn btn-danger btn-sm delF" data-t="${esc(f.Title||"")}" data-p="${esc(f.PostedOn||"")}">Delete</button>
+          <button type="button" class="btn btn-danger btn-sm delF" data-t="${esc(f.Title||"")}" data-p="${esc(f.PostedOn||"")}">Delete</button>
         </div>`).join("") : emptyMsg("No feed items yet");
       w.querySelectorAll(".delF").forEach(b => b.onclick = async () => {
         if (!confirm("Delete this item?")) return;
@@ -1621,8 +1631,8 @@ async function adminDoubts(root){
         ${d.Reply?`<div class="reply">${esc(d.Reply)}<br/><small class="mute2 tiny">Replied ${esc(fmtDate(d.RepliedOn))}</small></div>`:""}
         <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
           <input class="input rp" placeholder="Write a reply…" value="${esc(d.Reply||"")}" style="flex:1;min-width:200px" data-testid="admin-reply-input"/>
-          <button class="btn btn-primary btn-sm sr" data-id="${esc(d.DoubtID)}" data-testid="btn-send-reply">Reply</button>
-          ${String(d.Status).toLowerCase()!=='resolved'?`<button class="btn btn-green btn-sm mr" data-id="${esc(d.DoubtID)}">Mark resolved</button>`:""}
+          <button type="button" class="btn btn-primary btn-sm sr" data-id="${esc(d.DoubtID)}" data-testid="btn-send-reply">Reply</button>
+          ${String(d.Status).toLowerCase()!=='resolved'?`<button type="button" class="btn btn-green btn-sm mr" data-id="${esc(d.DoubtID)}">Mark resolved</button>`:""}
         </div>
       </div>`).join("");
     w.querySelectorAll(".sr").forEach(b => b.onclick = async () => {
@@ -1646,9 +1656,9 @@ async function adminResults(root){
       <input class="input" id="ftest" placeholder="Filter by TestID…" data-testid="filter-test"/>
       <select class="select" id="fclass" data-testid="filter-class"><option value="">All classes</option><option>9</option><option>10</option><option>11</option><option>12</option><option>Competitive</option></select>
       <input class="input" id="froll" placeholder="Filter by RollNo…" data-testid="filter-roll"/>
-      <button class="btn btn-primary btn-sm" id="apply">Apply</button>
+      <button type="button" class="btn btn-primary btn-sm" id="apply">Apply</button>
       <div class="spacer"></div>
-      <button class="btn btn-green btn-sm" id="csv" data-testid="btn-export-csv">Export CSV</button>
+      <button type="button" class="btn btn-green btn-sm" id="csv" data-testid="btn-export-csv">Export CSV</button>
     </div>
     <div id="resWrap">${skeletonList(3)}</div>`;
   let rows = [];
@@ -1766,7 +1776,7 @@ async function adminProfile(root){
 function openModal(title, bodyHtml){
   const back = document.createElement("div");
   back.className = "modal-back";
-  back.innerHTML = `<div class="modal glass"><div class="modal-head"><h3>${esc(title)}</h3><button class="btn-icon" id="mcx" data-testid="modal-close">✕</button></div><div id="mbody">${bodyHtml}</div></div>`;
+  back.innerHTML = `<div class="modal glass"><div class="modal-head"><h3>${esc(title)}</h3><button type="button" class="btn-icon" id="mcx" data-testid="modal-close">✕</button></div><div id="mbody">${bodyHtml}</div></div>`;
   document.body.appendChild(back);
   back.querySelector("#mcx").onclick = () => back.remove();
   back.onclick = (e) => { if (e.target === back) back.remove(); };

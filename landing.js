@@ -9,7 +9,7 @@
 
 /* Must match the API_URL constant near the top of app.html's <script>.
    If you ever redeploy the Google Apps Script web app, update BOTH places. */
-const API_URL = "https://script.google.com/macros/s/AKfycby4ICRdQjun3jbsIVBmmeH7OB1a67upJ-KrPy3EbD132TGaQXy3sI5sJxW8nO3HoM76_Q/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzNOJRP3BZaDsfqFXljj6VskcgXyiqJi9DGHjtnIvnupCA1vfb0s_iBAzOnthViO6kv/exec";
 
 /* --------------- Navigation to the app --------------- */
 function goToApp(tab, mode) {
@@ -29,7 +29,10 @@ document.querySelectorAll("[data-go]").forEach((el) => {
 const navToggle = document.getElementById("navToggle");
 const mobileNav = document.getElementById("mobileNav");
 if (navToggle && mobileNav) {
-  navToggle.addEventListener("click", () => mobileNav.classList.toggle("open"));
+  navToggle.addEventListener("click", () => {
+    const open = mobileNav.classList.toggle("open");
+    navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  });
   mobileNav.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => mobileNav.classList.remove("open")));
 }
 
@@ -55,7 +58,10 @@ async function trackVisit() {
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({ action: "trackVisit", visitorId: getVisitorId() })
   });
-  const json = await res.json();
+  if (!res.ok) throw new Error("stats unavailable: " + res.status);
+  const text = await res.text();
+  let json;
+  try { json = JSON.parse(text); } catch (_) { throw new Error("stats invalid response"); }
   if (!json.ok) throw new Error(json.error || "stats unavailable");
   return json;
 }
@@ -308,13 +314,21 @@ function initChemAnimation(canvasId, wrapId) {
 function pubEsc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 function pubFmtDate(s) { if (!s) return ""; try { return new Date(s).toLocaleDateString(undefined, { month: "short", day: "numeric" }); } catch (_) { return ""; } }
 
+function isSafeHttpUrl(u) {
+  if (!u) return false;
+  try {
+    const parsed = new URL(String(u).trim(), location.origin);
+    return parsed.protocol === "https:" || parsed.protocol === "http:";
+  } catch (_) { return false; }
+}
 function pubCard(f) {
   const type = String(f.Type || "").toLowerCase();
   const cls = type === "class" ? "yt" : type === "pdf" ? "pdf" : "ann";
   const ic = type === "class" ? "▶" : type === "pdf" ? "📄" : "📢";
-  const url = f.URL || "";
+  const rawUrl = (f.URL || "").trim();
+  const url = isSafeHttpUrl(rawUrl) ? rawUrl : "";
   const tag = url ? "a" : "div";
-  const hrefAttrs = url ? `href="${pubEsc(url)}" target="_blank" rel="noopener"` : "";
+  const hrefAttrs = url ? `href="${pubEsc(url)}" target="_blank" rel="noopener noreferrer"` : "";
   return `<${tag} class="pub-item" ${hrefAttrs}>
     <div class="pub-icon ${cls}">${ic}</div>
     <b>${pubEsc(f.Title || "Untitled")}</b>
@@ -336,7 +350,9 @@ async function initPublicFeed() {
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: "getFeed" })
     });
-    const json = await res.json();
+    if (!res.ok) throw new Error("Feed unavailable: " + res.status);
+    const txt = await res.text();
+    let json; try { json = JSON.parse(txt); } catch(_) { throw new Error("Feed invalid response"); }
     if (!json.ok) throw new Error(json.error || "Couldn't load feed");
 
     const feed = json.feed || [];
@@ -377,3 +393,80 @@ document.addEventListener("DOMContentLoaded", () => {
   initViewerStats();
   initPublicFeed();
 });
+
+
+/* ==============================================================
+   Enhancements — reveal on scroll, counts, marquee, tilt
+   ============================================================== */
+function initReveal() {
+  const els = document.querySelectorAll(".reveal");
+  if (!els.length) return;
+  if (!("IntersectionObserver" in window)) {
+    els.forEach(el => el.classList.add("in"));
+    return;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add("in");
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+  els.forEach(el => io.observe(el));
+}
+
+function initMarquee() {
+  const track = document.querySelector(".marquee-track");
+  if (!track) return;
+  // pause on hover
+  const marquee = track.closest(".hero-marquee");
+  if (marquee) {
+    marquee.addEventListener("mouseenter", () => track.style.animationPlayState = "paused");
+    marquee.addEventListener("mouseleave", () => track.style.animationPlayState = "running");
+  }
+}
+
+function initMatCount() {
+  // update counts after feed loads
+  const check = setInterval(() => {
+    const mat = document.getElementById("pubMaterialGrid");
+    const ann = document.getElementById("pubAnnGrid");
+    const cls = document.getElementById("pubClassGrid");
+    if (!mat) { clearInterval(check); return; }
+    const matCount = document.getElementById("matCount");
+    if (matCount && mat.children.length && !mat.querySelector(".pub-skel")) {
+      const real = mat.querySelectorAll(".pub-item").length;
+      matCount.textContent = real ? `${real} available` : "";
+    }
+    // stop after loaded
+    if (mat && !mat.querySelector(".pub-skel")) clearInterval(check);
+  }, 600);
+}
+
+function initTilt() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (window.innerWidth < 900) return;
+  document.querySelectorAll(".feature-card, .float-card").forEach(card => {
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const rx = ((y / rect.height) - 0.5) * -6;
+      const ry = ((x / rect.width) - 0.5) * 8;
+      card.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-4px)`;
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "";
+    });
+  });
+}
+
+// Hook into DOMContentLoaded
+const _origBoot = document.addEventListener;
+document.addEventListener("DOMContentLoaded", () => {
+  initReveal();
+  initMarquee();
+  initMatCount();
+  initTilt();
+}, { once: true });
