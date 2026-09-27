@@ -13,17 +13,47 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzNOJRP3BZaDsfqFXljj6Vs
 
 /* --------------- Navigation to the app --------------- */
 function goToApp(tab, mode) {
-  if (tab) sessionStorage.setItem("pendingTab", tab);
-  else sessionStorage.removeItem("pendingTab");
-  if (mode) sessionStorage.setItem("authModePref", mode);
+  try {
+    if (tab) sessionStorage.setItem("pendingTab", tab);
+    else sessionStorage.removeItem("pendingTab");
+    if (mode) sessionStorage.setItem("authModePref", mode);
+    else sessionStorage.removeItem("authModePref");
+  } catch (_) {
+    // storage may be blocked, continue anyway
+  }
+  // Use absolute path to avoid base issues
   window.location.href = "app.html";
 }
-document.querySelectorAll("[data-go]").forEach((el) => {
-  el.addEventListener("click", (e) => {
+
+let _navInited = false;
+function initNavigation() {
+  if (_navInited) return; _navInited = true;
+  // Use event delegation for all data-go elements, including those added dynamically
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-go]");
+    if (!el) return;
+    // Allow middle-click / cmd+click to open normally? No, we intercept left click only
+    if (e.button !== 0) return;
+    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
     e.preventDefault();
-    goToApp(el.dataset.go || null, el.dataset.mode || null);
+    const tab = el.dataset.go || null;
+    const mode = el.dataset.mode || null;
+    goToApp(tab, mode);
   });
-});
+
+  // Also ensure <a href="app.html"> without data-go still works if JS fails, but enhance
+  document.querySelectorAll('a[href="app.html"], a[href="./app.html"]').forEach(a => {
+    if (!a.hasAttribute("data-go")) {
+      a.addEventListener("click", (e) => {
+        // let default happen, but also set storage if needed
+        try {
+          const tab = a.dataset.go || null;
+          if (tab) sessionStorage.setItem("pendingTab", tab);
+        } catch(_){}
+      });
+    }
+  });
+}
 
 /* --------------- Mobile nav toggle --------------- */
 const navToggle = document.getElementById("navToggle");
@@ -389,6 +419,7 @@ async function initPublicFeed() {
 
 /* --------------- Boot --------------- */
 document.addEventListener("DOMContentLoaded", () => {
+  initNavigation();
   initChemAnimation("chemCanvas", "heroWrap");
   initViewerStats();
   initPublicFeed();
@@ -463,7 +494,6 @@ function initTilt() {
 }
 
 // Hook into DOMContentLoaded
-const _origBoot = document.addEventListener;
 document.addEventListener("DOMContentLoaded", () => {
   initReveal();
   initMarquee();

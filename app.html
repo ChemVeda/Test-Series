@@ -368,11 +368,12 @@ function toast(msg, kind = "") {
 }
 
 /* --------------- Lottie helper --------------- */
-function lottieMount(container, url, opts = {
+function lottieMount(container, url, opts = {}) {
   if (!container) return null;
-  if (typeof lottie === "undefined") { try { container.innerHTML = `<div style="padding:18px;text-align:center;color:var(--text-dim)">✨</div>`; } catch(_){} return null; }
-}) {
-  if (!container) return;
+  if (typeof lottie === "undefined") {
+    try { container.innerHTML = `<div style="padding:18px;text-align:center;color:var(--text-dim)">✨</div>`; } catch(_){}
+    return null;
+  }
   container.innerHTML = "";
   try {
     lottie.loadAnimation({
@@ -462,7 +463,7 @@ function renderAuth(root) {
       </div>
     </div>`;
 
-  root.querySelector("#adminGear").onclick = () => { state.route = "admin-auth"; render(); };
+if(root.querySelector("#adminGear")) root.querySelector("#adminGear").onclick = () => { state.route = "admin-auth"; render(); };
   root.querySelectorAll(".auth-tab").forEach(t => t.onclick = () => { state.authMode = t.dataset.mode; render(); });
   root.querySelector("#authForm").onsubmit = async (e) => {
     e.preventDefault();
@@ -508,7 +509,7 @@ function renderAdminAuth(root){
         </form>
       </div>
     </div>`;
-  root.querySelector("#backBtn").onclick = () => { state.route = "auth"; render(); };
+  const adminBack = root.querySelector("#adminAuthBackBtn"); if (adminBack) adminBack.onclick = () => { state.route = "auth"; render(); };
   root.querySelector("#adminForm").onsubmit = async (e) => {
     e.preventDefault();
     const f = new FormData(e.target);
@@ -555,7 +556,7 @@ function renderStudentApp(root){
       <button type="button" class="nav-btn ${state.tab==='profile'?'active':''}" data-tab="profile" data-testid="nav-profile">${icon("user")}<span>Profile</span></button>
     </nav>`;
 
-  root.querySelector("#logoutBtn").onclick = () => {
+if(root.querySelector("#logoutBtn")) root.querySelector("#logoutBtn").onclick = () => {
     store.del("student");
     state.student = null;
     state.quiz = null;
@@ -735,7 +736,7 @@ async function renderTests(root){
     const startTodayBtn = root.querySelector("#startToday");
     if (startTodayBtn) startTodayBtn.onclick = () => startQuiz(today.testId);
     root.querySelectorAll(".start-test").forEach(b => b.onclick = () => startQuiz(b.dataset.id));
-    root.querySelector("#lbBtn").onclick = () => openLeaderboard();
+if(root.querySelector("#lbBtn")) root.querySelector("#lbBtn").onclick = () => openLeaderboard();
   } catch (e) { root.innerHTML = errorMsg(e.message); }
 }
 
@@ -760,7 +761,7 @@ async function openLeaderboard(){
       </table></div>` : emptyMsg("No results yet");
   }
   modal.querySelector("#lbClass").onchange = load;
-  modal.querySelector("#lbRefresh").onclick = load;
+if(modal.querySelector("#lbRefresh")) modal.querySelector("#lbRefresh").onclick = load;
   load();
 }
 
@@ -868,8 +869,8 @@ function confirmSubmit(){
       <button type="button" class="btn btn-ghost" id="cx">Cancel</button>
       <button type="button" class="btn btn-green" id="cf" data-testid="btn-confirm-submit">Submit</button>
     </div>`);
-  modal.querySelector("#cx").onclick = () => modal.remove();
-  modal.querySelector("#cf").onclick = () => { modal.remove(); submitQuiz(false); };
+if(modal.querySelector("#cx")) modal.querySelector("#cx").onclick = () => modal.remove();
+if(modal.querySelector("#cf")) modal.querySelector("#cf").onclick = () => { modal.remove(); submitQuiz(false); };
 }
 
 async function submitQuiz(auto){
@@ -931,9 +932,9 @@ function renderResult(root){
   if (isHigh) lottieMount(root.querySelector("#celeb"), LOTTIE.celebrate, { loop: false });
   else lottieMount(root.querySelector("#celeb"), LOTTIE.success, { loop: false });
 
-  root.querySelector("#backBtn").onclick = () => { state.result = null; state.tab = "tests"; render(); };
+  const resultBack = root.querySelector("#resultBackBtn"); if (resultBack) resultBack.onclick = () => { state.result = null; state.tab = "tests"; render(); };
   let reviewOpen = false;
-  root.querySelector("#reviewBtn").onclick = () => {
+if(root.querySelector("#reviewBtn")) root.querySelector("#reviewBtn").onclick = () => {
     const rb = root.querySelector("#reviewBody");
     const btn = root.querySelector("#reviewBtn");
     reviewOpen = !reviewOpen;
@@ -1207,7 +1208,7 @@ function renderAdmin(root){
   ];
   nav.innerHTML = items.map(([k,l,i]) => `<button type="button" class="admin-nav-btn ${state.adminTab===k?'active':''}" data-tab="${k}" data-testid="admin-nav-${k}">${i} <span>${l}</span></button>`).join("");
   nav.querySelectorAll(".admin-nav-btn").forEach(b => b.onclick = () => { state.adminTab = b.dataset.tab; render(); });
-  root.querySelector("#adminLogout").onclick = () => { store.del("admin"); state.admin = null; state.route = "auth"; render(); toast("Signed out"); };
+if(root.querySelector("#adminLogout")) root.querySelector("#adminLogout").onclick = () => { store.del("admin"); state.admin = null; state.route = "auth"; render(); toast("Signed out"); };
 
   const main = root.querySelector("#adminMain");
   if (state.adminTab === "dashboard") return adminDashboard(main);
@@ -1290,7 +1291,7 @@ async function adminTests(root){
       <button type="button" class="btn btn-primary" id="addTest" data-testid="btn-add-test">+ New Test</button>
     </div>
     <div id="testTableWrap">${skeletonList(3)}</div>`;
-  root.querySelector("#addTest").onclick = () => testForm(null);
+if(root.querySelector("#addTest")) root.querySelector("#addTest").onclick = () => testForm(null);
   await refresh();
   async function refresh(){
     try {
@@ -1358,7 +1359,7 @@ async function adminTests(root){
           <button type="submit" class="btn btn-green" data-testid="btn-save-test">Save Test</button>
         </div>
       </form>`);
-    modal.querySelector("#cx").onclick = () => modal.remove();
+if(modal.querySelector("#cx")) modal.querySelector("#cx").onclick = () => modal.remove();
 
     // ── Question Builder logic ──
     let builderQs = JSON.parse(JSON.stringify(existing?.questions || []));
@@ -1465,11 +1466,11 @@ async function adminTests(root){
     renderBuilder();
 
     // Toggle JSON paste mode
-    modal.querySelector("#toggleJsonMode").onclick = () => {
+if(modal.querySelector("#toggleJsonMode")) modal.querySelector("#toggleJsonMode").onclick = () => {
       const jw = modal.querySelector("#jsonModeWrap");
       jw.classList.toggle("hidden");
     };
-    modal.querySelector("#parseJsonBtn").onclick = () => {
+if(modal.querySelector("#parseJsonBtn")) modal.querySelector("#parseJsonBtn").onclick = () => {
       const raw = modal.querySelector("#jsonPasteArea").value.trim();
       try {
         const parsed = JSON.parse(raw);
@@ -1579,10 +1580,10 @@ async function adminFeed(root){
       toast("Posted","success"); e.target.reset(); load();
     } catch(err){ toast(err.message,"error"); }
   };
-  root.querySelector("#saveBanner").onclick = async () => {
+if(root.querySelector("#saveBanner")) root.querySelector("#saveBanner").onclick = async () => {
     try { await api("crudFeed", { op:"setBanner", bannerURL: root.querySelector("#banner").value }); toast("Banner updated","success"); } catch(e){ toast(e.message,"error"); }
   };
-  root.querySelector("#saveAnn").onclick = async () => {
+if(root.querySelector("#saveAnn")) root.querySelector("#saveAnn").onclick = async () => {
     try { await api("crudFeed", { op:"setAnnouncement", announcement: root.querySelector("#ann").value }); toast("Announcement updated","success"); } catch(e){ toast(e.message,"error"); }
   };
   async function load(){
@@ -1679,8 +1680,8 @@ async function adminResults(root){
         </tr>`).join("")}</tbody></table></div>` : emptyMsg("No results found");
     } catch(e){ root.querySelector("#resWrap").innerHTML = errorMsg(e.message); }
   }
-  root.querySelector("#apply").onclick = load;
-  root.querySelector("#csv").onclick = () => {
+if(root.querySelector("#apply")) root.querySelector("#apply").onclick = load;
+if(root.querySelector("#csv")) root.querySelector("#csv").onclick = () => {
     if (!rows.length) return toast("Nothing to export","error");
     const headers = ["S.No","Date","Name","RollNo","Class","TestID","Title","Subject","Score","Total","%","Grade","TimeSec","TimeFmt","SubmittedOn"];
     const csv = [headers.join(",")].concat(rows.map(r => headers.map(h => `"${String(r[h]==null?"":r[h]).replace(/"/g,'""')}"`).join(","))).join("\n");
@@ -1778,7 +1779,7 @@ function openModal(title, bodyHtml){
   back.className = "modal-back";
   back.innerHTML = `<div class="modal glass"><div class="modal-head"><h3>${esc(title)}</h3><button type="button" class="btn-icon" id="mcx" data-testid="modal-close">✕</button></div><div id="mbody">${bodyHtml}</div></div>`;
   document.body.appendChild(back);
-  back.querySelector("#mcx").onclick = () => back.remove();
+if(back.querySelector("#mcx")) back.querySelector("#mcx").onclick = () => back.remove();
   back.onclick = (e) => { if (e.target === back) back.remove(); };
   return back;
 }
@@ -1814,8 +1815,8 @@ document.addEventListener("keydown", (e) => {
   } else if (s) {
     state.student = s;
     state.route = "app";
-    const pendingTab = sessionStorage.getItem("pendingTab");
-    sessionStorage.removeItem("pendingTab");
+    let pendingTab = null;
+    try { pendingTab = sessionStorage.getItem("pendingTab"); sessionStorage.removeItem("pendingTab"); } catch(_){}
     state.tab = pendingTab || store.get("activeTab") || "home";
     if (pendingTab) store.set("activeTab", pendingTab);
     // Restore in-progress quiz from localStorage
@@ -1841,9 +1842,9 @@ document.addEventListener("keydown", (e) => {
     }
   } else {
     state.route = "auth";
-    const modePref = sessionStorage.getItem("authModePref");
+    let modePref = null;
+    try { modePref = sessionStorage.getItem("authModePref"); sessionStorage.removeItem("authModePref"); } catch(_){}
     if (modePref === "login" || modePref === "register") state.authMode = modePref;
-    sessionStorage.removeItem("authModePref");
   }
   render();
 })();
