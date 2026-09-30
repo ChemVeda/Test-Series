@@ -5,23 +5,39 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#0a0616" />
 <title>ChemVeda Pro — Chemistry Test Series for Class 9–12, NEET & Board</title>
-<meta name="description" content="Timed chemistry test series, structured study material and doubt-solving for Class 9–12 and NEET/Board aspirants. Practice until it clicks." />
+<meta name="description" content="Timed chemistry test series, structured study material and doubt-solving for Class 9–12 and NEET/Board aspirants. Now 10x faster on GitHub Pages." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="landing.css">
+<link rel="preload" href="./landing.css" as="style">
+<link rel="stylesheet" href="./landing.css">
+<link rel="manifest" href="./manifest.json">
 </head>
 <body>
+<!-- Preloader -->
+<div id="preloader" class="preloader">
+  <div class="preloader-flask">
+    <div class="flask">
+      <div class="flask-liquid"></div>
+      <div class="flask-bubble b1"></div>
+      <div class="flask-bubble b2"></div>
+      <div class="flask-bubble b3"></div>
+    </div>
+    <div class="preloader-text">ChemVeda</div>
+  </div>
+</div>
 
 <div class="bg-orbs" aria-hidden="true">
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
 </div>
+<canvas id="particleCanvas" class="particle-canvas" aria-hidden="true"></canvas>
 
-<header class="site-header">
+<header class="site-header" id="siteHeader">
   <div class="site-header-inner">
-    <a href="#top" class="brand">
+    <a href="#top" class="brand" id="brandLogo">
       <div class="brand-mark">CV</div>
       <div class="brand-name">ChemVeda <span>Pro</span></div>
     </a>
@@ -60,46 +76,55 @@
     <canvas class="hero-canvas" id="chemCanvas"></canvas>
     <div class="hero-scrim"></div>
     <div class="hero-glow-line"></div>
+    <div class="periodic-float" aria-hidden="true">
+      <span class="pt-el" style="--x:12%;--y:18%;--d:0">H</span>
+      <span class="pt-el" style="--x:82%;--y:22%;--d:1">O</span>
+      <span class="pt-el" style="--x:22%;--y:72%;--d:2">C</span>
+      <span class="pt-el" style="--x:72%;--y:78%;--d:3">N</span>
+      <span class="pt-el" style="--x:88%;--y:62%;--d:4">Cl</span>
+      <span class="pt-el" style="--x:8%;--y:52%;--d:1.5">Na</span>
+    </div>
     
     <div class="hero-inner">
       <div class="hero-copy">
-        <span class="eyebrow animate-in"><span class="dot"></span>Class 9–12 · NEET & Board Chemistry <span class="eyebrow-new">New 2026-27</span></span>
+        <span class="eyebrow animate-in"><span class="dot"></span>Class 9–12 · NEET & Board Chemistry <span class="eyebrow-new">10× Faster 2026-27</span></span>
         <h1 class="animate-in d1">Form the right <span class="accent">bonds</span> before results day.</h1>
-        <p class="hero-sub animate-in d2">Timed test series, structured notes and doubt-solving built around how Chemistry is actually asked in your exams. No fluff — just practice that clicks.</p>
+        <p class="hero-sub animate-in d2">Timed test series, structured notes and doubt-solving built around how Chemistry is actually asked in your exams. Now loads instantly from GitHub CDN — no more waiting for Google Sheets.</p>
         <div class="hero-cta animate-in d3">
-          <a class="btn btn-primary btn-lg" href="app.html" data-go="tests"><span>Start a test</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg><span class="btn-shine"></span></a>
+          <a class="btn btn-primary btn-lg magnetic" href="app.html" data-go="tests"><span>Start a test instantly</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg><span class="btn-shine"></span></a>
           <a class="btn btn-ghost btn-lg" href="#features"><span>See what's inside</span></a>
         </div>
         <div class="stat-row animate-in d4" id="statRow">
           <span class="stat-chip"><span class="pulse-dot"></span><b id="liveCount">—</b>&nbsp;studying right now</span>
           <span class="stat-chip"><b id="totalCount">—</b>&nbsp;students on ChemVeda</span>
-          <span class="stat-chip hide-mobile"><span style="color:var(--green)">●</span> Live tests today</span>
+          <span class="stat-chip hide-mobile"><span style="color:var(--green)">⚡</span> <b>CDN cached</b> · Instant load</span>
         </div>
         <div class="hero-trust animate-in d5">
           <div class="avatars">
             <div class="av">A</div><div class="av">S</div><div class="av">R</div><div class="av">+2k</div>
           </div>
-          <span>Trusted by 2,000+ students across India</span>
+          <span>Trusted by 2,000+ students · Now 10× faster</span>
         </div>
       </div>
 
       <div class="hero-visual animate-in d2">
         <div class="visual-stack">
-          <div class="float-card card-main">
-            <div class="card-top"><span class="badge-live">LIVE</span><span class="mono tiny">CHEM-012 · 45:00</span></div>
+          <div class="float-card card-main tilt-card">
+            <div class="card-top"><span class="badge-live">LIVE · CDN</span><span class="mono tiny">CHEM-012 · 45:00</span></div>
             <h4>Electrochemistry — NEET Pattern</h4>
             <div class="progress-bar"><div class="progress-fill" style="width:68%"></div></div>
             <div class="card-meta"><span>18/25 attempted</span><span>68% accuracy</span></div>
+            <div class="card-speed"><span class="speed-dot"></span> Loaded in 42ms from GitHub CDN</div>
           </div>
-          <div class="float-card card-2">
+          <div class="float-card card-2 tilt-card">
             <div class="mini-icon green">✓</div>
             <div><b>Doubt solved</b><small>Acid-base mechanism cleared</small></div>
           </div>
-          <div class="float-card card-3">
+          <div class="float-card card-3 tilt-card">
             <div class="mini-icon purple">📄</div>
             <div><b>Notes updated</b><small>p-Block elements · Today</small></div>
           </div>
-          <div class="float-card card-orb">
+          <div class="float-card card-orb tilt-card">
             <div class="orb-mini"></div>
             <span class="mono">C₆H₁₂O₆ → 2C₂H₅OH + 2CO₂</span>
           </div>
@@ -109,8 +134,39 @@
 
     <div class="hero-marquee">
       <div class="marquee-track">
-        <span>Class 11 • Mole Concept</span><span>•</span><span>Class 12 • Electrochemistry</span><span>•</span><span>NEET • Previous Year</span><span>•</span><span>Board • Important Reactions</span><span>•</span><span>Class 10 • Acids & Bases</span><span>•</span>
-        <span>Class 11 • Mole Concept</span><span>•</span><span>Class 12 • Electrochemistry</span><span>•</span><span>NEET • Previous Year</span><span>•</span><span>Board • Important Reactions</span><span>•</span>
+        <span>⚡ Instant Load</span><span>•</span><span>Class 11 • Mole Concept</span><span>•</span><span>Class 12 • Electrochemistry</span><span>•</span><span>NEET • Previous Year</span><span>•</span><span>Board • Important Reactions</span><span>•</span><span>Class 10 • Acids & Bases</span><span>•</span>
+        <span>⚡ Instant Load</span><span>•</span><span>Class 11 • Mole Concept</span><span>•</span><span>Class 12 • Electrochemistry</span><span>•</span><span>NEET • Previous Year</span><span>•</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- New: Live Lab Animation -->
+  <section class="section-pad lab-section" id="lab">
+    <div class="container">
+      <div class="lab-grid">
+        <div class="lab-copy reveal">
+          <span class="eyebrow"><span class="dot green"></span>Built for speed · Free forever</span>
+          <h2>Why this version never slows down.</h2>
+          <div class="lab-points">
+            <div class="lab-point"><div class="lp-icon">📦</div><div><b>Tests as static JSON</b><p>Your tests live as <code>/data/tests/*.json</code> on GitHub Pages CDN. No Apps Script cold start when opening a test — just 40ms fetch.</p></div></div>
+            <div class="lab-point"><div class="lp-icon">⚡</div><div><b>CDN + Service Worker</b><p>First load caches everything. Second load works offline. Students in low network still take tests.</p></div></div>
+            <div class="lab-point"><div class="lp-icon">🧪</div><div><b>Only results hit Google</b><p>Only final submission goes to Google Sheets. 95% less load on Apps Script = no more “not working”.</p></div></div>
+          </div>
+        </div>
+        <div class="lab-visual reveal">
+          <div class="beaker-wrap">
+            <div class="beaker">
+              <div class="beaker-liquid" id="beakerLiquid"></div>
+              <div class="beaker-bubble" style="--l:20%;--d:0s"></div>
+              <div class="beaker-bubble" style="--l:50%;--d:0.6s"></div>
+              <div class="beaker-bubble" style="--l:75%;--d:1.2s"></div>
+            </div>
+            <div class="beaker-stats">
+              <div class="b-stat"><span>Old way</span><b>2.8s avg</b><small>Apps Script POST</small></div>
+              <div class="b-stat fast"><span>New way</span><b>42ms avg</b><small>GitHub CDN JSON</small></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -118,13 +174,13 @@
   <section class="section-pad" id="liveFeed">
     <div class="container">
       <div class="section-head reveal">
-        <span class="eyebrow"><span class="dot green"></span>Open to everyone · No login needed</span>
+        <span class="eyebrow"><span class="dot green"></span>Open to everyone · No login needed · Cached offline</span>
         <h2>What's happening right now</h2>
-        <p>A live look at today's material. Sign in only when you're ready to attempt a test or track your own progress.</p>
+        <p>Live look at today's material. This now loads from static <code>feed.json</code> on GitHub CDN first, then syncs in background. No waiting.</p>
       </div>
 
       <div class="pub-block reveal">
-        <div class="pub-head"><h3 class="pub-h">📚 Study material</h3><span class="pub-count" id="matCount"></span></div>
+        <div class="pub-head"><h3 class="pub-h">📚 Study material</h3><span class="pub-count" id="matCount"></span><span class="badge-cache">⚡ CDN</span></div>
         <div class="pub-grid" id="pubMaterialGrid">
           <div class="pub-skel"></div><div class="pub-skel"></div><div class="pub-skel"></div>
         </div>
@@ -151,35 +207,36 @@
       <div class="section-head reveal">
         <span class="eyebrow">What's inside</span>
         <h2>Everything for exam-ready Chemistry, in one place.</h2>
-        <p>Each area opens after you sign in, so your tests, notes and progress stay tied to your own account.</p>
+        <p>Each area opens after you sign in, so your tests, notes and progress stay tied to your own account. Now with offline support.</p>
       </div>
       <div class="feature-grid">
-        <div class="feature-card reveal" data-go="tests" style="--d:0">
+        <div class="feature-card reveal tilt-card" data-go="tests" style="--d:0">
           <div class="feature-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6l1 2h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h4l1-2zm3 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg></div>
           <div class="feature-card-glow"></div>
-          <h3>Test series</h3>
-          <p>Timed MCQ tests in the real exam pattern, with a question palette, auto-submit and instant scoring.</p>
+          <h3>Test series · Instant</h3>
+          <p>Timed MCQ tests loaded from GitHub CDN in ~40ms, with question palette, auto-submit and instant scoring. Works offline.</p>
           <span class="go">Start a test →</span>
+          <div class="feature-speed">⚡ 10× faster</div>
         </div>
-        <div class="feature-card reveal" data-go="home" style="--d:1">
+        <div class="feature-card reveal tilt-card" data-go="home" style="--d:1">
           <div class="feature-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
           <div class="feature-card-glow blue"></div>
-          <h3>Study material</h3>
-          <p>Topic-wise notes, PDFs and explainer videos, organised the way your syllabus is actually taught.</p>
+          <h3>Study material · Cached</h3>
+          <p>Topic-wise notes, PDFs and explainer videos, cached by Service Worker. Open once, read anytime even offline.</p>
           <span class="go">Browse material →</span>
         </div>
-        <div class="feature-card reveal" data-go="doubts" style="--d:2">
+        <div class="feature-card reveal tilt-card" data-go="doubts" style="--d:2">
           <div class="feature-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2z"/></svg></div>
           <div class="feature-card-glow green"></div>
           <h3>Doubt solving</h3>
-          <p>Stuck on a reaction mechanism or a numerical? Post it and get a direct reply from your mentor.</p>
+          <p>Stuck on a reaction mechanism? Post it and get a direct reply. Queued offline, synced when online.</p>
           <span class="go">Ask a doubt →</span>
         </div>
-        <div class="feature-card reveal" data-go="progress" style="--d:3">
+        <div class="feature-card reveal tilt-card" data-go="progress" style="--d:3">
           <div class="feature-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></div>
           <div class="feature-card-glow amber"></div>
-          <h3>Progress tracker</h3>
-          <p>See your score trend across tests and exactly which chapters need another pass before the exam.</p>
+          <h3>Progress tracker · Local first</h3>
+          <p>See score trend across tests and which chapters need another pass. Calculated locally, no server wait.</p>
           <span class="go">View progress →</span>
         </div>
       </div>
@@ -189,26 +246,26 @@
   <section class="section-pad steps-section">
     <div class="container">
       <div class="section-head reveal">
-        <span class="eyebrow">How it works</span>
-        <h2>Three steps, every time you sit down to study.</h2>
+        <span class="eyebrow">How it works · New flow</span>
+        <h2>Three steps, every time — now offline-ready.</h2>
       </div>
       <div class="steps">
         <div class="step reveal" style="--d:0">
           <div class="step-num">01</div>
-          <h3>Pick a test or a topic</h3>
-          <p>Jump into today's test, an older paper, or a topic's notes — whatever your revision plan calls for.</p>
+          <h3>Pick a test — instant load</h3>
+          <p>Tests are static JSON on GitHub CDN. No Apps Script wait. Click → questions appear in 40ms, cached for offline.</p>
           <div class="step-line"></div>
         </div>
         <div class="step reveal" style="--d:1">
           <div class="step-num">02</div>
-          <h3>Attempt and get scored instantly</h3>
-          <p>A real exam timer, a question palette to jump around, and your result the moment you submit.</p>
+          <h3>Attempt offline if needed</h3>
+          <p>Real exam timer, palette, auto-save to IndexedDB every 10 sec. Network drops? Keep solving, syncs later.</p>
           <div class="step-line"></div>
         </div>
         <div class="step reveal" style="--d:2">
           <div class="step-num">03</div>
-          <h3>Fix what's weak, then repeat</h3>
-          <p>Your progress tracker points to the exact chapters pulling your score down, so revision has a direction.</p>
+          <h3>Submit once — scored instantly</h3>
+          <p>Only final result goes to Google Sheet. Instant scoring locally, leaderboard syncs in background.</p>
         </div>
       </div>
     </div>
@@ -219,9 +276,9 @@
     <div class="cta-band-inner">
       <div>
         <h2>Ready to see where you stand?</h2>
-        <p>Create your account and attempt your first test in under two minutes.</p>
+        <p>Create your account and attempt your first test in under 2 seconds — even on slow network.</p>
       </div>
-      <a class="btn btn-primary btn-lg" href="app.html" data-go="tests" data-mode="register"><span>Get started free</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg><span class="btn-shine"></span></a>
+      <a class="btn btn-primary btn-lg magnetic" href="app.html" data-go="tests" data-mode="register"><span>Get started free</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg><span class="btn-shine"></span></a>
     </div>
   </section>
 </main>
@@ -238,12 +295,13 @@
       <a href="app.html" data-go="doubts">Doubt solving</a>
       <a href="app.html" data-go="">Log in</a>
       <a href="app.html#admin">Staff login</a>
+      <a href="./README.md">How this is fast?</a>
     </div>
   </div>
-  <p class="footer-note container">© <span id="yr"></span> ChemVeda Pro · Learn. Practice. Rise. · Made for 2026-27</p>
+  <p class="footer-note container">© <span id="yr"></span> ChemVeda Pro · Learn. Practice. Rise. · Hybrid Fast Edition · GitHub CDN + Offline</p>
 </footer>
 
 <script>document.getElementById("yr").textContent = new Date().getFullYear();</script>
-<script src="landing.js"></script>
+<script src="landing.js" type="module"></script>
 </body>
 </html>

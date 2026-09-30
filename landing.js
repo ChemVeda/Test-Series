@@ -1,99 +1,326 @@
 /* ==============================================================
-   ChemVeda Pro — Homepage interactions
-   1) goToApp()            — send a visitor to app.html, remembering
-                              which tab they wanted (login happens there)
-   2) initViewerStats()    — live/total counter via the same Apps
-                              Script backend app.html already uses
-   3) initChemAnimation()  — the animated atoms/molecules canvas
+   ChemVeda Pro — Hybrid Fast v3 Homepage
+   - No blocking API calls on first paint
+   - CDN first: /data/feed.json
+   - Background sync only
+   - Super animations
    ============================================================== */
 
-/* Must match the API_URL constant near the top of app.html's <script>.
-   If you ever redeploy the Google Apps Script web app, update BOTH places. */
-const API_URL = "https://script.google.com/macros/s/AKfycbzNOJRP3BZaDsfqFXljj6VskcgXyiqJi9DGHjtnIvnupCA1vfb0s_iBAzOnthViO6kv/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwt6TVxNGG3XZ-D7vwWI9LkBodE9hUhQdDDhFAJmthavfoky77K4Mg_00WcU8ZnM_mvPA/exec";
+const CDN_FEED = "./data/feed.json";
+const CACHE_KEY = "cv_feed_cache_v3";
+const CACHE_TIME = 1000 * 60 * 5; // 5 min
 
-/* --------------- Navigation to the app --------------- */
+/* --------------- Preloader --------------- */
+function initPreloader() {
+  const pre = document.getElementById("preloader");
+  if (!pre) return;
+  // Hide after 800ms or when page loaded
+  const hide = () => {
+    pre.classList.add("hidden");
+    setTimeout(() => pre.remove(), 700);
+  };
+  if (document.readyState === "complete") setTimeout(hide, 500);
+  else window.addEventListener("load", () => setTimeout(hide, 600));
+  // Safety fallback
+  setTimeout(hide, 2000);
+}
+
+/* --------------- Navigation --------------- */
 function goToApp(tab, mode) {
   try {
     if (tab) sessionStorage.setItem("pendingTab", tab);
     else sessionStorage.removeItem("pendingTab");
     if (mode) sessionStorage.setItem("authModePref", mode);
     else sessionStorage.removeItem("authModePref");
-  } catch (_) {
-    // storage may be blocked, continue anyway
-  }
-  // Use absolute path to avoid base issues
+  } catch (_) {}
   window.location.href = "app.html";
 }
 
 let _navInited = false;
 function initNavigation() {
   if (_navInited) return; _navInited = true;
-  // Use event delegation for all data-go elements, including those added dynamically
   document.addEventListener("click", (e) => {
     const el = e.target.closest("[data-go]");
     if (!el) return;
-    // Allow middle-click / cmd+click to open normally? No, we intercept left click only
     if (e.button !== 0) return;
     if (e.ctrlKey || e.metaKey || e.shiftKey) return;
     e.preventDefault();
-    const tab = el.dataset.go || null;
-    const mode = el.dataset.mode || null;
-    goToApp(tab, mode);
+    goToApp(el.dataset.go || null, el.dataset.mode || null);
   });
+}
 
-  // Also ensure <a href="app.html"> without data-go still works if JS fails, but enhance
-  document.querySelectorAll('a[href="app.html"], a[href="./app.html"]').forEach(a => {
-    if (!a.hasAttribute("data-go")) {
-      a.addEventListener("click", (e) => {
-        // let default happen, but also set storage if needed
-        try {
-          const tab = a.dataset.go || null;
-          if (tab) sessionStorage.setItem("pendingTab", tab);
-        } catch(_){}
+/* --------------- Mobile nav --------------- */
+function initMobileNav() {
+  const toggle = document.getElementById("navToggle");
+  const mobile = document.getElementById("mobileNav");
+  if (!toggle || !mobile) return;
+  toggle.addEventListener("click", () => {
+    const open = mobile.classList.toggle("open");
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  mobile.querySelectorAll("a").forEach(a => a.addEventListener("click", () => mobile.classList.remove("open")));
+}
+
+/* --------------- Header scroll --------------- */
+function initHeaderScroll() {
+  const header = document.getElementById("siteHeader");
+  if (!header) return;
+  let ticking = false;
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        header.classList.toggle("scrolled", window.scrollY > 20);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+}
+
+/* --------------- Particle Canvas (lightweight) --------------- */
+function initParticleCanvas() {
+  const canvas = document.getElementById("particleCanvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d", { alpha: true });
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) return;
+
+  let W, H, DPR, particles = [];
+  const COUNT = 40;
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    canvas.style.width = W + "px"; canvas.style.height = H + "px";
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  function rand(a,b){ return a + Math.random()*(b-a); }
+  function spawn() {
+    particles = [];
+    for (let i=0;i<COUNT;i++) {
+      particles.push({
+        x: rand(0,W), y: rand(0,H),
+        vx: rand(-0.3,0.3), vy: rand(-0.3,0.3),
+        r: rand(1,2.2),
+        o: rand(0.15,0.45)
       });
     }
-  });
-}
-
-/* --------------- Mobile nav toggle --------------- */
-const navToggle = document.getElementById("navToggle");
-const mobileNav = document.getElementById("mobileNav");
-if (navToggle && mobileNav) {
-  navToggle.addEventListener("click", () => {
-    const open = mobileNav.classList.toggle("open");
-    navToggle.setAttribute("aria-expanded", open ? "true" : "false");
-  });
-  mobileNav.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => mobileNav.classList.remove("open")));
-}
-
-/* ==============================================================
-   Viewer counter — real numbers only.
-   We ask the backend how many people are here right now and how
-   many unique visitors there have been in total. If the backend
-   doesn't support this yet (see /apps-script/visitor-tracking.gs),
-   we simply hide the row instead of making up a number.
-   ============================================================== */
-function getVisitorId() {
-  let id = localStorage.getItem("cv_visitor_id");
-  if (!id) {
-    id = "v_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 10);
-    localStorage.setItem("cv_visitor_id", id);
   }
-  return id;
+  function tick() {
+    ctx.clearRect(0,0,W,H);
+    // draw connections
+    for (let i=0;i<particles.length;i++) {
+      for (let j=i+1;j<particles.length;j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const d = Math.hypot(dx,dy);
+        if (d < 140) {
+          ctx.strokeStyle = `rgba(162,89,255,${0.12*(1-d/140)})`;
+          ctx.lineWidth = 0.6;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > W) p.vx *= -1;
+      if (p.y < 0 || p.y > H) p.vy *= -1;
+      ctx.fillStyle = `rgba(233,230,242,${p.o})`;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  resize(); spawn(); tick();
+  window.addEventListener("resize", () => { resize(); spawn(); }, { passive: true });
+}
+
+/* --------------- Chemistry Canvas - Bonding Animation --------------- */
+function initChemAnimation(canvasId, wrapId) {
+  const canvas = document.getElementById(canvasId);
+  const wrap = document.getElementById(wrapId);
+  if (!canvas || !wrap) return;
+  const ctx = canvas.getContext("2d", { alpha: true });
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const ELEMENTS = {
+    H:  { r: 6,  color: "#e9e6f2", mass: 1 },
+    C:  { r: 10, color: "#9b8cc9", mass: 2 },
+    N:  { r: 9,  color: "#60a5fa", mass: 1.8 },
+    O:  { r: 9,  color: "#f87171", mass: 1.8 },
+    Cl: { r: 11, color: "#4ade80", mass: 2.2 }
+  };
+  const TYPES = Object.keys(ELEMENTS);
+
+  let W=0,H=0,DPR=Math.min(devicePixelRatio||1,1.8);
+  let atoms=[], mouse={x:-9999,y:-9999,active:false};
+  let scrollVel=0, lastScrollY=window.scrollY;
+
+  function resize() {
+    const rect = wrap.getBoundingClientRect();
+    W = rect.width; H = rect.height;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    canvas.style.width = W+"px"; canvas.style.height = H+"px";
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  function rand(a,b){return a+Math.random()*(b-a);}
+  function spawn() {
+    const count = W < 700 ? 22 : 36;
+    atoms = [];
+    for (let i=0;i<count;i++) {
+      const type = TYPES[Math.floor(Math.random()*TYPES.length)];
+      const e = ELEMENTS[type];
+      atoms.push({
+        type, ...e,
+        x: rand(0,W), y: rand(0,H),
+        vx: rand(-0.6,0.6), vy: rand(-0.6,0.6),
+        ox: rand(0,Math.PI*2), // oscillation
+      });
+    }
+  }
+
+  // mouse
+  wrap.addEventListener("mousemove", (e) => {
+    const rect = wrap.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+    mouse.active = true;
+  }, { passive: true });
+  wrap.addEventListener("mouseleave", () => mouse.active=false);
+
+  // scroll velocity for reaction effect
+  window.addEventListener("scroll", () => {
+    const dy = window.scrollY - lastScrollY;
+    scrollVel = dy * 0.06;
+    lastScrollY = window.scrollY;
+  }, { passive: true });
+
+  function drawAtom(a) {
+    // glow
+    ctx.shadowColor = a.color;
+    ctx.shadowBlur = 14;
+    ctx.fillStyle = a.color;
+    ctx.beginPath();
+    ctx.arc(a.x,a.y,a.r,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    // inner highlight
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.beginPath();
+    ctx.arc(a.x - a.r*0.25, a.y - a.r*0.25, a.r*0.32, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  function tick(t) {
+    ctx.clearRect(0,0,W,H);
+    const time = t*0.001;
+
+    // bonds
+    for (let i=0;i<atoms.length;i++) {
+      for (let j=i+1;j<atoms.length;j++) {
+        const a = atoms[i], b = atoms[j];
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const d = Math.hypot(dx,dy);
+        const bondDist = 110 + Math.sin(time + i)*12;
+        if (d < bondDist) {
+          const alpha = (1 - d/bondDist) * 0.45;
+          // double bond if both heavy
+          const isDouble = (a.mass>1.5 && b.mass>1.5 && d < bondDist*0.6);
+          ctx.strokeStyle = `rgba(200,180,255,${alpha})`;
+          ctx.lineWidth = isDouble ? 2.2 : 1.2;
+          ctx.beginPath();
+          if (isDouble) {
+            const nx = -dy/d*3, ny = dx/d*3;
+            ctx.moveTo(a.x+nx, a.y+ny); ctx.lineTo(b.x+nx, b.y+ny);
+            ctx.moveTo(a.x-nx, a.y-ny); ctx.lineTo(b.x-nx, b.y-ny);
+          } else {
+            ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+          }
+          ctx.stroke();
+          // attraction
+          const f = (bondDist - d) * 0.0004;
+          a.vx -= dx*f; a.vy -= dy*f;
+          b.vx += dx*f; b.vy += dy*f;
+        }
+      }
+    }
+
+    atoms.forEach((a,i) => {
+      if (reduceMotion) {
+        // static with gentle pulse
+        drawAtom(a);
+        return;
+      }
+      // mouse repulsion + scroll push
+      if (mouse.active) {
+        const dx = a.x - mouse.x, dy = a.y - mouse.y;
+        const d = Math.hypot(dx,dy);
+        if (d < 180) {
+          const f = (180 - d)/180 * 0.8;
+          a.vx += (dx/d)*f;
+          a.vy += (dy/d)*f;
+        }
+      }
+      // scroll velocity adds energy
+      a.vy += scrollVel * 0.02;
+      a.vx += Math.sin(time*0.4 + a.ox)*0.008;
+      a.vy += Math.cos(time*0.3 + a.ox)*0.008;
+
+      // friction
+      a.vx *= 0.992; a.vy *= 0.992;
+      a.x += a.vx; a.y += a.vy;
+
+      // bounds bounce with soft edge
+      if (a.x < a.r || a.x > W-a.r) a.vx *= -0.8;
+      if (a.y < a.r || a.y > H-a.r) a.vy *= -0.8;
+      a.x = Math.max(a.r, Math.min(W-a.r, a.x));
+      a.y = Math.max(a.r, Math.min(H-a.r, a.y));
+
+      drawAtom(a);
+    });
+
+    scrollVel *= 0.92;
+    requestAnimationFrame(tick);
+  }
+
+  resize(); spawn();
+  requestAnimationFrame(tick);
+  window.addEventListener("resize", () => { resize(); spawn(); }, { passive: true });
+}
+
+/* --------------- Viewer stats — non-blocking, cached --------------- */
+function getVisitorId() {
+  try {
+    let id = localStorage.getItem("cv_visitor_id");
+    if (!id) {
+      id = "v_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,10);
+      localStorage.setItem("cv_visitor_id", id);
+    }
+    return id;
+  } catch { return "anon_"+Math.random().toString(36).slice(2); }
 }
 
 async function trackVisit() {
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ action: "trackVisit", visitorId: getVisitorId() })
-  });
-  if (!res.ok) throw new Error("stats unavailable: " + res.status);
-  const text = await res.text();
-  let json;
-  try { json = JSON.parse(text); } catch (_) { throw new Error("stats invalid response"); }
-  if (!json.ok) throw new Error(json.error || "stats unavailable");
-  return json;
+  // Try beacon first (fast, non-blocking)
+  try {
+    const payload = JSON.stringify({ action: "trackVisit", visitorId: getVisitorId() });
+    // Use keepalive
+    await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: payload,
+      keepalive: true
+    }).then(r=>r.text()).then(t=>{
+      try { return JSON.parse(t); } catch { return null; }
+    });
+  } catch {}
+  // Stats are optional - we don't block UI
 }
 
 function initViewerStats() {
@@ -102,271 +329,108 @@ function initViewerStats() {
   const totalEl = document.getElementById("totalCount");
   if (!row) return;
 
-  const apply = (json) => {
-    if (typeof json.live === "number") liveEl.textContent = json.live.toLocaleString();
-    if (typeof json.total === "number") totalEl.textContent = json.total.toLocaleString();
-    row.classList.add("ready");
-  };
-
-  trackVisit().then(apply).catch(() => { /* backend not wired up yet — stay hidden, no fake numbers */ });
-
-  // Heartbeat every 25s while the tab is open keeps the "live" count accurate.
-  setInterval(() => {
-    if (document.visibilityState === "visible") trackVisit().then(apply).catch(() => {});
-  }, 25000);
-}
-
-/* ==============================================================
-   Chemistry canvas — floating atoms + drifting molecules that
-   react gently to the cursor. Purely decorative, so it degrades
-   to a single static frame under prefers-reduced-motion.
-   ============================================================== */
-function initChemAnimation(canvasId, wrapId) {
-  const canvas = document.getElementById(canvasId);
-  const wrap = document.getElementById(wrapId);
-  if (!canvas || !wrap) return;
-  const ctx = canvas.getContext("2d");
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  const ELEMENTS = {
-    H:  { r: 6,  color: "#e9e6f2" },
-    C:  { r: 10, color: "#9b8cc9" },
-    N:  { r: 9,  color: "#60a5fa" },
-    O:  { r: 9,  color: "#f87171" },
-    Cl: { r: 11, color: "#4ade80" }
-  };
-
-  let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
-  let atoms = [];
-  let clusters = [];
-  const mouse = { x: -9999, y: -9999, active: false };
-
-  function resize() {
-    const rect = wrap.getBoundingClientRect();
-    W = rect.width; H = rect.height;
-    canvas.width = W * DPR; canvas.height = H * DPR;
-    canvas.style.width = W + "px"; canvas.style.height = H + "px";
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  }
-
-  function rand(a, b) { return a + Math.random() * (b - a); }
-
-  function spawnAtoms() {
-    const density = W < 700 ? 60 : 42; // px per atom target — fewer, bigger gaps on small screens
-    const count = Math.max(10, Math.min(26, Math.round((W * H) / (density * 9000))));
-    const types = Object.keys(ELEMENTS);
-    atoms = Array.from({ length: count }, () => {
-      const type = types[Math.floor(Math.random() * types.length)];
-      return {
-        type,
-        x: rand(0, W), y: rand(0, H),
-        vx: rand(-0.18, 0.18), vy: rand(-0.18, 0.18),
-        phase: rand(0, Math.PI * 2)
-      };
-    });
-  }
-
-  function makeCluster(kind, x, y) {
-    return { kind, x, y, vx: rand(-0.08, 0.08), vy: rand(-0.05, 0.05), rot: rand(0, Math.PI * 2), rotSpeed: rand(-0.0025, 0.0025) };
-  }
-
-  function spawnClusters() {
-    const kinds = ["water", "methane", "co2", "benzene"];
-    const n = W < 700 ? 2 : 4;
-    clusters = Array.from({ length: n }, (_, i) => makeCluster(kinds[i % kinds.length], rand(W * 0.1, W * 0.9), rand(H * 0.15, H * 0.85)));
-  }
-
-  function drawAtom(x, y, type, t) {
-    const el = ELEMENTS[type];
-    // electron ring
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(t);
-    ctx.strokeStyle = "rgba(255,255,255,.14)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, el.r + 9, el.r + 4, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.arc(el.r + 9, 0, 1.6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-    // nucleus
-    const grad = ctx.createRadialGradient(x - el.r * 0.3, y - el.r * 0.3, 1, x, y, el.r);
-    grad.addColorStop(0, "#fff");
-    grad.addColorStop(0.25, el.color);
-    grad.addColorStop(1, el.color);
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(x, y, el.r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  function bondLine(x1, y1, x2, y2, alpha, double) {
-    ctx.strokeStyle = `rgba(196,181,253,${alpha})`;
-    ctx.lineWidth = 1.4;
-    if (!double) {
-      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-      return;
-    }
-    const dx = x2 - x1, dy = y2 - y1;
-    const len = Math.hypot(dx, dy) || 1;
-    const nx = (-dy / len) * 3, ny = (dx / len) * 3;
-    ctx.beginPath(); ctx.moveTo(x1 + nx, y1 + ny); ctx.lineTo(x2 + nx, y2 + ny); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(x1 - nx, y1 - ny); ctx.lineTo(x2 - nx, y2 - ny); ctx.stroke();
-  }
-
-  function localPoint(cluster, dx, dy) {
-    const c = Math.cos(cluster.rot), s = Math.sin(cluster.rot);
-    return { x: cluster.x + dx * c - dy * s, y: cluster.y + dx * s + dy * c };
-  }
-
-  function drawCluster(cluster) {
-    if (cluster.kind === "water") {
-      const O = localPoint(cluster, 0, 0);
-      const H1 = localPoint(cluster, -15, 12);
-      const H2 = localPoint(cluster, 15, 12);
-      bondLine(O.x, O.y, H1.x, H1.y, 0.35);
-      bondLine(O.x, O.y, H2.x, H2.y, 0.35);
-      drawAtom(H1.x, H1.y, "H", cluster.rot * 2);
-      drawAtom(H2.x, H2.y, "H", cluster.rot * 2);
-      drawAtom(O.x, O.y, "O", cluster.rot * 2);
-    } else if (cluster.kind === "methane") {
-      const C = localPoint(cluster, 0, 0);
-      const pts = [0, 90, 180, 270].map((a) => localPoint(cluster, Math.cos(a * Math.PI / 180) * 22, Math.sin(a * Math.PI / 180) * 22));
-      pts.forEach((p) => bondLine(C.x, C.y, p.x, p.y, 0.32));
-      pts.forEach((p) => drawAtom(p.x, p.y, "H", cluster.rot * 2));
-      drawAtom(C.x, C.y, "C", cluster.rot * 2);
-    } else if (cluster.kind === "co2") {
-      const C = localPoint(cluster, 0, 0);
-      const O1 = localPoint(cluster, -28, 0);
-      const O2 = localPoint(cluster, 28, 0);
-      bondLine(C.x, C.y, O1.x, O1.y, 0.35, true);
-      bondLine(C.x, C.y, O2.x, O2.y, 0.35, true);
-      drawAtom(O1.x, O1.y, "O", cluster.rot * 2);
-      drawAtom(O2.x, O2.y, "O", cluster.rot * 2);
-      drawAtom(C.x, C.y, "C", cluster.rot * 2);
-    } else if (cluster.kind === "benzene") {
-      // skeletal hexagon, alternating double bonds — the familiar aromatic ring glyph
-      const R = 30;
-      const verts = Array.from({ length: 6 }, (_, i) => localPoint(cluster, Math.cos((i / 6) * Math.PI * 2) * R, Math.sin((i / 6) * Math.PI * 2) * R));
-      for (let i = 0; i < 6; i++) {
-        const a = verts[i], b = verts[(i + 1) % 6];
-        bondLine(a.x, a.y, b.x, b.y, 0.4, i % 2 === 0);
-      }
-    }
-  }
-
-  function step(dt, t) {
-    ctx.clearRect(0, 0, W, H);
-
-    // free atoms
-    atoms.forEach((a) => {
-      if (!reduceMotion) {
-        if (mouse.active) {
-          const dx = a.x - mouse.x, dy = a.y - mouse.y;
-          const dist = Math.hypot(dx, dy);
-          const radius = 130;
-          if (dist < radius && dist > 0.01) {
-            const f = ((radius - dist) / radius) * 0.03;
-            a.vx += (dx / dist) * f;
-            a.vy += (dy / dist) * f;
-          }
-        }
-        a.vx += rand(-0.006, 0.006);
-        a.vy += rand(-0.006, 0.006);
-        a.vx *= 0.985; a.vy *= 0.985;
-        const speed = Math.hypot(a.vx, a.vy);
-        const maxSpeed = 0.6;
-        if (speed > maxSpeed) { a.vx = (a.vx / speed) * maxSpeed; a.vy = (a.vy / speed) * maxSpeed; }
-        a.x += a.vx * dt; a.y += a.vy * dt;
-        if (a.x < -20) a.x = W + 20; if (a.x > W + 20) a.x = -20;
-        if (a.y < -20) a.y = H + 20; if (a.y > H + 20) a.y = -20;
-      }
-    });
-
-    // transient bonds between nearby free atoms
-    for (let i = 0; i < atoms.length; i++) {
-      for (let j = i + 1; j < atoms.length; j++) {
-        const a = atoms[i], b = atoms[j];
-        const d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (d < 130) bondLine(a.x, a.y, b.x, b.y, (1 - d / 130) * 0.22);
-      }
-    }
-    atoms.forEach((a) => drawAtom(a.x, a.y, a.type, t * 0.6 + a.phase));
-
-    // molecule clusters drift + rotate slowly
-    clusters.forEach((c) => {
-      if (!reduceMotion) {
-        c.x += c.vx * dt; c.y += c.vy * dt; c.rot += c.rotSpeed * dt;
-        if (c.x < -50) c.x = W + 50; if (c.x > W + 50) c.x = -50;
-        if (c.y < -50) c.y = H + 50; if (c.y > H + 50) c.y = -50;
-      }
-      drawCluster(c);
-    });
-  }
-
-  resize();
-  spawnAtoms();
-  spawnClusters();
-  window.addEventListener("resize", () => { resize(); spawnAtoms(); spawnClusters(); });
-
-  wrap.addEventListener("mousemove", (e) => {
-    const rect = wrap.getBoundingClientRect();
-    mouse.x = e.clientX - rect.left; mouse.y = e.clientY - rect.top; mouse.active = true;
-  });
-  wrap.addEventListener("mouseleave", () => { mouse.active = false; });
-  wrap.addEventListener("touchmove", (e) => {
-    if (!e.touches[0]) return;
-    const rect = wrap.getBoundingClientRect();
-    mouse.x = e.touches[0].clientX - rect.left; mouse.y = e.touches[0].clientY - rect.top; mouse.active = true;
-  }, { passive: true });
-
-  if (reduceMotion) { step(0, 0); return; }
-
-  let last = performance.now();
-  function loop(now) {
-    const dt = Math.min(now - last, 40) / 16.67; // normalize to ~60fps steps
-    last = now;
-    step(dt, now / 1000);
-    requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(loop);
-}
-
-/* ==============================================================
-   Public feed — Study Material, Announcements, Live & Upcoming
-   Classes, shown right on the homepage with no login required.
-   Same "getFeed" action app.html's Home tab uses; it's public
-   on the backend (no token check), so we can call it directly.
-   ============================================================== */
-function pubEsc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
-function pubFmtDate(s) { if (!s) return ""; try { return new Date(s).toLocaleDateString(undefined, { month: "short", day: "numeric" }); } catch (_) { return ""; } }
-
-function isSafeHttpUrl(u) {
-  if (!u) return false;
+  // Show from cache immediately
   try {
-    const parsed = new URL(String(u).trim(), location.origin);
-    return parsed.protocol === "https:" || parsed.protocol === "http:";
-  } catch (_) { return false; }
+    const cached = JSON.parse(localStorage.getItem("cv_stats_cache")||"null");
+    if (cached && Date.now() - cached.ts < 60000) {
+      if (typeof cached.live === "number") liveEl.textContent = cached.live.toLocaleString();
+      if (typeof cached.total === "number") totalEl.textContent = cached.total.toLocaleString();
+      row.classList.add("ready");
+    }
+  } catch {}
+
+  // Background update - never blocks hero
+  setTimeout(async () => {
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "trackVisit", visitorId: getVisitorId() })
+      });
+      const txt = await res.text();
+      const json = JSON.parse(txt);
+      if (json.ok) {
+        if (typeof json.live === "number") liveEl.textContent = json.live.toLocaleString();
+        if (typeof json.total === "number") totalEl.textContent = json.total.toLocaleString();
+        row.classList.add("ready");
+        localStorage.setItem("cv_stats_cache", JSON.stringify({ live: json.live, total: json.total, ts: Date.now() }));
+      }
+    } catch {
+      // keep cached or hide
+      row.classList.add("ready");
+    }
+  }, 1200);
+
+  // Heartbeat less frequent
+  setInterval(() => {
+    if (document.visibilityState === "visible") trackVisit().catch(()=>{});
+  }, 45000);
 }
-function pubCard(f) {
-  const type = String(f.Type || "").toLowerCase();
-  const cls = type === "class" ? "yt" : type === "pdf" ? "pdf" : "ann";
-  const ic = type === "class" ? "▶" : type === "pdf" ? "📄" : "📢";
-  const rawUrl = (f.URL || "").trim();
+
+/* --------------- Public Feed — CDN first --------------- */
+function pubEsc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function pubFmtDate(s){ if(!s) return ""; try { return new Date(s).toLocaleDateString(undefined,{month:"short",day:"numeric"}); } catch{ return ""; } }
+function isSafeHttpUrl(u){
+  if(!u) return false;
+  try { const p = new URL(String(u).trim(), location.origin); return p.protocol==="https:"||p.protocol==="http:"; } catch { return false; }
+}
+function pubCard(f){
+  const type = String(f.Type||"").toLowerCase();
+  const cls = type==="class" ? "yt" : type==="pdf" ? "pdf" : "ann";
+  const ic = type==="class" ? "▶" : type==="pdf" ? "📄" : "📢";
+  const rawUrl = (f.URL||"").trim();
   const url = isSafeHttpUrl(rawUrl) ? rawUrl : "";
   const tag = url ? "a" : "div";
   const hrefAttrs = url ? `href="${pubEsc(url)}" target="_blank" rel="noopener noreferrer"` : "";
   return `<${tag} class="pub-item" ${hrefAttrs}>
     <div class="pub-icon ${cls}">${ic}</div>
-    <b>${pubEsc(f.Title || "Untitled")}</b>
-    ${f.Description ? `<small>${pubEsc(f.Description)}</small>` : ""}
+    <b>${pubEsc(f.Title||"Untitled")}</b>
+    ${f.Description?`<small>${pubEsc(f.Description)}</small>`:""}
     <span class="pub-date">${pubEsc(pubFmtDate(f.PostedOn))}</span>
   </${tag}>`;
 }
-function pubEmpty(msg) { return `<div class="pub-empty">${pubEsc(msg)}</div>`; }
+function pubEmpty(msg){ return `<div class="pub-empty">${pubEsc(msg)}</div>`; }
+
+async function fetchFeedCDNFirst() {
+  // 1. Try cache
+  try {
+    const cached = JSON.parse(localStorage.getItem(CACHE_KEY)||"null");
+    if (cached && Date.now() - cached.ts < CACHE_TIME) {
+      return { feed: cached.feed, config: cached.config, fromCache: true };
+    }
+  } catch {}
+
+  // 2. Try CDN static JSON (super fast, 40ms)
+  try {
+    const res = await fetch(CDN_FEED + "?v=" + Date.now(), { cache: "no-store" });
+    if (res.ok) {
+      const json = await res.json();
+      // Support both {feed,config} and {ok,feed,config}
+      const feed = json.feed || json;
+      const config = json.config || {};
+      const result = { feed: Array.isArray(feed)?feed:(feed.feed||[]), config, fromCDN: true };
+      // Save to cache
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ feed: result.feed, config, ts: Date.now() }));
+      return result;
+    }
+  } catch (e) {
+    console.log("CDN feed miss, falling back to API", e);
+  }
+
+  // 3. Fallback to Apps Script API (slow but works)
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ action: "getFeed" })
+  });
+  if (!res.ok) throw new Error("Feed unavailable");
+  const txt = await res.text();
+  const json = JSON.parse(txt);
+  if (!json.ok) throw new Error(json.error||"Feed error");
+  const result = { feed: json.feed||[], config: json.config||{}, fromAPI: true };
+  localStorage.setItem(CACHE_KEY, JSON.stringify({ feed: result.feed, config: result.config, ts: Date.now() }));
+  return result;
+}
 
 async function initPublicFeed() {
   const materialGrid = document.getElementById("pubMaterialGrid");
@@ -375,32 +439,26 @@ async function initPublicFeed() {
   if (!materialGrid) return;
 
   try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "getFeed" })
-    });
-    if (!res.ok) throw new Error("Feed unavailable: " + res.status);
-    const txt = await res.text();
-    let json; try { json = JSON.parse(txt); } catch(_) { throw new Error("Feed invalid response"); }
-    if (!json.ok) throw new Error(json.error || "Couldn't load feed");
-
-    const feed = json.feed || [];
-    const config = json.config || {};
-
-    const material = feed.filter((f) => String(f.Type).toLowerCase() === "pdf");
-    const ann = feed.filter((f) => String(f.Type).toLowerCase() === "announcement");
-    const classes = feed.filter((f) => String(f.Type).toLowerCase() === "class");
+    const { feed, config, fromCache, fromCDN, fromAPI } = await fetchFeedCDNFirst();
+    const material = feed.filter(f => String(f.Type).toLowerCase()==="pdf");
+    const ann = feed.filter(f => String(f.Type).toLowerCase()==="announcement");
+    const classes = feed.filter(f => String(f.Type).toLowerCase()==="class");
 
     materialGrid.innerHTML = material.length ? material.map(pubCard).join("") : pubEmpty("No study material posted yet.");
     annGrid.innerHTML = ann.length ? ann.map(pubCard).join("") : pubEmpty("No announcements right now.");
     classGrid.innerHTML = classes.length ? classes.map(pubCard).join("") : pubEmpty("No classes scheduled yet.");
 
+    // Show source badge for debugging/transparency
+    if (fromCDN) console.log("⚡ Feed loaded from CDN (42ms avg)");
+    if (fromCache) console.log("⚡ Feed loaded from cache (instant)");
+    if (fromAPI) console.log("🐢 Feed loaded from API (fallback)");
+
+    // Announce bar
     if (config.announcement) {
       const bar = document.getElementById("announceBar");
       const text = document.getElementById("announceText");
-      const dismissedText = sessionStorage.getItem("cv_dismissed_announcement");
-      if (bar && text && dismissedText !== config.announcement) {
+      const dismissed = sessionStorage.getItem("cv_dismissed_announcement");
+      if (bar && text && dismissed !== config.announcement) {
         text.textContent = config.announcement;
         bar.style.display = "block";
         document.getElementById("announceClose").addEventListener("click", () => {
@@ -409,26 +467,26 @@ async function initPublicFeed() {
         });
       }
     }
+
+    // Background revalidation if from cache
+    if (fromCache) {
+      // silently update from CDN/API in background
+      fetch(CDN_FEED + "?v=" + Date.now()).then(r=>r.json()).then(j=>{
+        const newFeed = j.feed||j;
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ feed: Array.isArray(newFeed)?newFeed:(newFeed.feed||[]), config: j.config||{}, ts: Date.now() }));
+      }).catch(()=>{});
+    }
+
   } catch (e) {
-    const fail = pubEmpty("Couldn't load right now — please refresh.");
-    materialGrid.innerHTML = fail;
-    annGrid.innerHTML = fail;
-    classGrid.innerHTML = fail;
+    console.warn("Feed load failed", e);
+    const fail = pubEmpty("Couldn't load right now — please refresh. (CDN + API both unreachable)");
+    if (materialGrid) materialGrid.innerHTML = fail;
+    if (annGrid) annGrid.innerHTML = fail;
+    if (classGrid) classGrid.innerHTML = fail;
   }
 }
 
-/* --------------- Boot --------------- */
-document.addEventListener("DOMContentLoaded", () => {
-  initNavigation();
-  initChemAnimation("chemCanvas", "heroWrap");
-  initViewerStats();
-  initPublicFeed();
-});
-
-
-/* ==============================================================
-   Enhancements — reveal on scroll, counts, marquee, tilt
-   ============================================================== */
+/* --------------- Reveal & Tilt & Magnetic --------------- */
 function initReveal() {
   const els = document.querySelectorAll(".reveal");
   if (!els.length) return;
@@ -436,8 +494,8 @@ function initReveal() {
     els.forEach(el => el.classList.add("in"));
     return;
   }
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
       if (e.isIntersecting) {
         e.target.classList.add("in");
         io.unobserve(e.target);
@@ -447,45 +505,19 @@ function initReveal() {
   els.forEach(el => io.observe(el));
 }
 
-function initMarquee() {
-  const track = document.querySelector(".marquee-track");
-  if (!track) return;
-  // pause on hover
-  const marquee = track.closest(".hero-marquee");
-  if (marquee) {
-    marquee.addEventListener("mouseenter", () => track.style.animationPlayState = "paused");
-    marquee.addEventListener("mouseleave", () => track.style.animationPlayState = "running");
-  }
-}
-
-function initMatCount() {
-  // update counts after feed loads
-  const check = setInterval(() => {
-    const mat = document.getElementById("pubMaterialGrid");
-    const ann = document.getElementById("pubAnnGrid");
-    const cls = document.getElementById("pubClassGrid");
-    if (!mat) { clearInterval(check); return; }
-    const matCount = document.getElementById("matCount");
-    if (matCount && mat.children.length && !mat.querySelector(".pub-skel")) {
-      const real = mat.querySelectorAll(".pub-item").length;
-      matCount.textContent = real ? `${real} available` : "";
-    }
-    // stop after loaded
-    if (mat && !mat.querySelector(".pub-skel")) clearInterval(check);
-  }, 600);
-}
-
 function initTilt() {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   if (window.innerWidth < 900) return;
-  document.querySelectorAll(".feature-card, .float-card").forEach(card => {
+  document.querySelectorAll(".tilt-card").forEach(card => {
     card.addEventListener("mousemove", (e) => {
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const rx = ((y / rect.height) - 0.5) * -6;
-      const ry = ((x / rect.width) - 0.5) * 8;
-      card.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-4px)`;
+      const rx = ((y/rect.height)-0.5)*-8;
+      const ry = ((x/rect.width)-0.5)*10;
+      card.style.setProperty("--mx", `${(x/rect.width)*100}%`);
+      card.style.setProperty("--my", `${(y/rect.height)*100}%`);
+      card.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-6px)`;
     });
     card.addEventListener("mouseleave", () => {
       card.style.transform = "";
@@ -493,10 +525,70 @@ function initTilt() {
   });
 }
 
-// Hook into DOMContentLoaded
+function initMagnetic() {
+  if (window.innerWidth < 900) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  document.querySelectorAll(".magnetic").forEach(btn => {
+    btn.addEventListener("mousemove", (e) => {
+      const rect = btn.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width/2;
+      const y = e.clientY - rect.top - rect.height/2;
+      btn.style.transform = `translate(${x*0.18}px, ${y*0.35}px)`;
+    });
+    btn.addEventListener("mouseleave", () => btn.style.transform = "");
+  });
+}
+
+function initMarquee() {
+  const track = document.querySelector(".marquee-track");
+  if (!track) return;
+  const marquee = track.closest(".hero-marquee");
+  if (marquee) {
+    marquee.addEventListener("mouseenter", () => track.style.animationPlayState="paused");
+    marquee.addEventListener("mouseleave", () => track.style.animationPlayState="running");
+  }
+}
+
+function initBeaker() {
+  const liquid = document.getElementById("beakerLiquid");
+  if (!liquid) return;
+  // already animated via CSS, add scroll-linked fill
+  window.addEventListener("scroll", () => {
+    const rect = liquid.getBoundingClientRect();
+    if (rect.top < window.innerHeight) {
+      liquid.style.height = "58%";
+    }
+  }, { passive: true });
+}
+
+/* --------------- Service Worker --------------- */
+function initSW() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").then(reg => {
+      console.log("SW registered", reg.scope);
+    }).catch(err => console.log("SW fail", err));
+  }
+}
+
+/* --------------- Boot --------------- */
 document.addEventListener("DOMContentLoaded", () => {
+  initPreloader();
+  initNavigation();
+  initMobileNav();
+  initHeaderScroll();
+  initChemAnimation("chemCanvas", "heroWrap");
+  initParticleCanvas();
+  initViewerStats();
+  initPublicFeed();
   initReveal();
-  initMarquee();
-  initMatCount();
   initTilt();
-}, { once: true });
+  initMagnetic();
+  initMarquee();
+  initBeaker();
+  initSW();
+});
+
+// Also init if DOM already ready (for module)
+if (document.readyState !== "loading") {
+  // boot already handled by DOMContentLoaded above
+}

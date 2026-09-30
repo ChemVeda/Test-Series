@@ -1,0 +1,66 @@
+# GitHub Actions - Auto-sync Sheets -> Static JSON
+# This workflow runs every 5 minutes, pulls data from your Apps Script
+# and commits updated feed.json + tests/*.json to the repo
+# So your frontend always serves fresh data from CDN, but 0 load on Sheets for students
+
+name: Sync Sheets to CDN
+
+on:
+  schedule:
+    - cron: "*/5 * * * *" # every 5 min
+  workflow_dispatch: # manual trigger
+  push:
+    branches: [main]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch from Apps Script
+        run: |
+          # Your Apps Script must have doGet?action=exportAll returning all data
+          curl -s "https://script.google.com/macros/s/YOUR_DEPLOY_ID/exec?action=exportAll" -o export.json
+          cat export.json
+
+      - name: Generate static JSON files
+        run: |
+          node - << 'NODE'
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('export.json','utf8'));
+          
+          // Ensure dirs
+          fs.mkdirSync('data/tests', {recursive:true});
+          
+          // Feed
+          fs.writeFileSync('data/feed.json', JSON.stringify({
+            feed: data.feed.feed || data.feed,
+            config: data.feed.config || {},
+            _generatedAt: new Date().toISOString(),
+            _source: 'github-action'
+          }, null, 2));
+          console.log('feed.json written');
+
+          // Tests index
+          fs.writeFileSync('data/tests/index.json', JSON.stringify({
+            tests: data.testsList.tests,
+            todayTestId: data.testsList.todayTestId,
+            _generatedAt: new Date().toISOString()
+          }, null, 2));
+          console.log('index.json written');
+
+          // Individual tests
+          for (const [id, test] of Object.entries(data.tests)) {
+            fs.writeFileSync(`data/tests/${id}.json`, JSON.stringify(test, null, 2));
+            console.log(`${id}.json written`);
+          }
+          NODE
+
+      - name: Commit if changed
+        run: |
+          git config user.name "ChemVeda Bot"
+          git config user.email "bot@chemveda.github.io"
+          git add data/
+          git diff --staged --quiet || git commit -m "⚡ Auto-sync tests from Sheets - $(date -u)"
+          git push
