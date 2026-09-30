@@ -6,7 +6,7 @@
    - Super animations
    ============================================================== */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwt6TVxNGG3XZ-D7vwWI9LkBodE9hUhQdDDhFAJmthavfoky77K4Mg_00WcU8ZnM_mvPA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwx9lBAIHYZzreNlfLMGMBi8jMYy-n00VWpkVi4v_kJ07a6p-62B9G8tb8w6X-pMJz_GQ/exec";
 const CDN_FEED = "./data/feed.json";
 const CACHE_KEY = "cv_feed_cache_v3";
 const CACHE_TIME = 1000 * 60 * 5; // 5 min
