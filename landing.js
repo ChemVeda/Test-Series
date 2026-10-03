@@ -9,7 +9,7 @@
 
 /* Must match the API_URL constant near the top of app.html's <script>.
    If you ever redeploy the Google Apps Script web app, update BOTH places. */
-const API_URL = "https://script.google.com/macros/s/AKfycbxCtSaC3ztR7y87w94HWiMgXrTtsAJ7WQq7Ho4kMKLl7brzgW-VIxj0cWRtpc5lVwpCTA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxj8wGY6s-X6UTlCpcASQ0wVGsEHRRVSncI7TMWVUsOzY0nLLFPfeCwYoiYZ7YLs_wcrg/exec";
 
 /* --------------- Navigation to the app --------------- */
 function goToApp(tab, mode) {
@@ -417,9 +417,21 @@ function initSupport() {
   update();
 }
 
+/* --------------- Marquee: pause on hover --------------- */
+function initMarquee() {
+  const track = document.querySelector(".marquee-track");
+  if (!track) return;
+  const marquee = track.closest(".hero-marquee");
+  if (marquee) {
+    marquee.addEventListener("mouseenter", () => track.style.animationPlayState = "paused");
+    marquee.addEventListener("mouseleave", () => track.style.animationPlayState = "running");
+  }
+}
+
 /* --------------- Boot --------------- */
 document.addEventListener("DOMContentLoaded", () => {
   initSupport();
+  initMarquee();
   initPublicFeed();
   initChemAnimation("chemCanvas", "heroWrap");
   // Visitor counter is decorative — start it after the page has settled.

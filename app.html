@@ -223,6 +223,8 @@ h3{font-size:1.1rem;font-weight:600}
 .review-q{font-weight:600;margin-bottom:8px}
 .review-opt{padding:8px 12px;border-radius:8px;margin-top:6px;font-size:.9rem;background:rgba(255,255,255,.03)}
 .review-opt.your{background:rgba(248,113,113,.14);color:#fecaca}
+.review-expl{margin-top:10px;padding:12px 14px;border-radius:10px;background:rgba(162,89,255,.10);border:1px solid rgba(162,89,255,.28);font-size:.9rem;line-height:1.55}
+.review-expl b{display:block;color:#d8b4fe;margin-bottom:4px;font-size:.8rem;letter-spacing:.03em}
 .review-opt.correct{background:rgba(34,197,94,.14);color:#86efac}
 
 /* ============ Doubt Box ============ */
@@ -309,7 +311,7 @@ h3{font-size:1.1rem;font-weight:600}
    ChemVeda Pro 2026-27 — Client
    ============================================================== */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxCtSaC3ztR7y87w94HWiMgXrTtsAJ7WQq7Ho4kMKLl7brzgW-VIxj0cWRtpc5lVwpCTA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxj8wGY6s-X6UTlCpcASQ0wVGsEHRRVSncI7TMWVUsOzY0nLLFPfeCwYoiYZ7YLs_wcrg/exec";
 
 /* Lottie animation URLs (LottieFiles public CDN) */
 const LOTTIE = {
@@ -439,6 +441,20 @@ document.addEventListener("click", (e) => {
 
 /* --------------- Small DOM helpers --------------- */
 function h(html){ const d = document.createElement("div"); d.innerHTML = html.trim(); return d.firstElementChild; }
+/* Chemical formula subscripts for display only: H2O -> H₂O, 2NaOH -> 2NaOH, Na2ZnO2 -> Na₂ZnO₂.
+   Stored text is never changed. Conservative rules avoid touching things like "NEET2026" or "A2". */
+const _SUB = {"0":"₀","1":"₁","2":"₂","3":"₃","4":"₄","5":"₅","6":"₆","7":"₇","8":"₈","9":"₉"};
+const _SINGLE_OK = new Set(["H","N","O","F","P","S","I","Cl","Br"]);
+function subFormula(str){
+  return String(str == null ? "" : str).replace(/(?<![A-Za-z0-9])(\d*)((?:[A-Z][a-z]?\d*|\((?:[A-Z][a-z]?\d*)+\)\d*)+)(?![A-Za-z0-9])/g, (m, coef, f) => {
+    if (!/\d/.test(f)) return m;
+    if (/\d{3,}/.test(f)) return m;
+    const single = f.match(/^([A-Z][a-z]?)\d+$/);
+    if (single && !_SINGLE_OK.has(single[1])) return m;
+    return coef + f.replace(/(?<=[A-Za-z)])(\d+)/g, d => d.replace(/\d/g, c => _SUB[c]));
+  });
+}
+function chem(s){ return esc(subFormula(s)); }
 function fmtDate(s){ if(!s) return ""; try{ return new Date(s).toLocaleString(undefined,{dateStyle:"medium",timeStyle:"short"});}catch(_){return s;} }
 function fmtDay(s){ if(!s) return ""; try{ return new Date(s).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});}catch(_){return s;}}
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
@@ -764,7 +780,7 @@ async function renderTests(root){
           <h3>${esc(today.title)}</h3>
           <p class="muted" style="margin:6px 0 14px">${esc(today.subject)} · ${today.timer} min · ${today.questionsCount} questions</p>
           ${takenIds.has(today.testId)
-            ? `<span class="badge green" style="padding:10px 16px;font-size:.85rem">✓ Already Submitted</span>`
+            ? `<span class="badge green" style="padding:10px 16px;font-size:.85rem">✓ Already Submitted</span> <button class="btn btn-ghost btn-sm view-review" data-id="${esc(today.testId)}" style="margin-left:8px">View Review</button>`
             : `<button class="btn btn-green" id="startToday" data-testid="btn-start-today">Start Test →</button>`
           }
         </div>` : ""}
@@ -788,7 +804,7 @@ async function renderTests(root){
           <div style="margin-top:14px">
             ${past.map(t => `<div class="test-row" style="margin-bottom:8px">
               <div class="meta"><b>${esc(t.title)}</b><small>${esc(t.subject)} · ${esc(fmtDay(t.date))}</small></div>
-              <span class="badge green">✓ Done</span>
+              <div style="display:flex;gap:8px;align-items:center"><span class="badge green">✓ Done</span><button class="btn btn-ghost btn-sm view-review" data-id="${esc(t.testId)}">View Review</button></div>
             </div>`).join("")}
           </div>
         </div>`;
@@ -801,7 +817,7 @@ async function renderTests(root){
           </div>
           <div style="display:flex;gap:8px;align-items:center">
             ${takenIds.has(t.testId)
-              ? `<span class="badge green">✓ Attempted</span>`
+              ? `<span class="badge green">✓ Attempted</span><button class="btn btn-ghost btn-sm view-review" data-id="${esc(t.testId)}">View Review</button>`
               : `<button class="btn btn-primary btn-sm start-test" data-id="${esc(t.testId)}" data-testid="btn-start-${esc(t.testId)}">Start</button>`
             }
           </div>
@@ -811,6 +827,7 @@ async function renderTests(root){
     const startTodayBtn = root.querySelector("#startToday");
     if (startTodayBtn) startTodayBtn.onclick = () => startQuiz(today.testId);
     root.querySelectorAll(".start-test").forEach(b => b.onclick = () => startQuiz(b.dataset.id));
+    root.querySelectorAll(".view-review").forEach(b => b.onclick = () => openPastReview(b.dataset.id, b));
     root.querySelector("#lbBtn").onclick = () => openLeaderboard();
   } catch (e) { root.innerHTML = errorMsg(e.message); }
 }
@@ -877,7 +894,7 @@ function renderQuiz(root){
 
       <div class="glass q-card" data-testid="quiz-question">
         <div class="q-num">Question ${cur+1} of ${q.test.questions.length}</div>
-        <div class="q-text">${esc(question.q || question.text || question.question || "(Question text not available)")}</div>
+        <div class="q-text">${chem(question.q || question.text || question.question || "(Question text not available)")}</div>
         ${question.q_hi ? `<div class="q-text-hi hi">${esc(question.q_hi)}</div>` : ""}
         <div id="opts"></div>
       </div>
@@ -905,7 +922,7 @@ function renderQuiz(root){
     div.className = "option" + (q.answers[cur] === i ? " selected" : "");
     div.setAttribute("data-testid", `quiz-option-${i}`);
     div.innerHTML = `<div class="letter">${String.fromCharCode(65+i)}</div>
-      <div><div class="txt">${esc(op)}</div>${question.options_hi&&question.options_hi[i]?`<div class="txt-hi hi">${esc(question.options_hi[i])}</div>`:""}</div>`;
+      <div><div class="txt">${chem(op)}</div>${question.options_hi&&question.options_hi[i]?`<div class="txt-hi hi">${esc(question.options_hi[i])}</div>`:""}</div>`;
     div.onclick = () => { q.answers[cur] = i; store.set("resume_"+q.test.testId, {test: q.test, answers: q.answers, cursor: q.cursor, startedAt: q.startedAt}); render(); };
     opts.appendChild(div);
   });
@@ -1004,8 +1021,10 @@ function renderResult(root){
       <div id="reviewBody" class="hidden" style="margin-top:20px"></div>
     </div>`;
 
-  if (isHigh) lottieMount(root.querySelector("#celeb"), LOTTIE.celebrate, { loop: false });
-  else lottieMount(root.querySelector("#celeb"), LOTTIE.success, { loop: false });
+  if (!state.result.past) {
+    if (isHigh) lottieMount(root.querySelector("#celeb"), LOTTIE.celebrate, { loop: false });
+    else lottieMount(root.querySelector("#celeb"), LOTTIE.success, { loop: false });
+  }
 
   root.querySelector("#backBtn").onclick = () => { state.result = null; state.tab = "tests"; render(); };
   let reviewOpen = false;
@@ -1030,7 +1049,7 @@ function renderResult(root){
       const correctIdx = Number(r.correct);
       const chosenIdx  = (r.chosen !== undefined && r.chosen !== null) ? Number(r.chosen) : -1;
       return `<div class="review-item ${r.isCorrect ? 'correct' : 'wrong'}">
-        <div class="review-q">${i+1}. ${esc(r.q || r.text || "")}</div>
+        <div class="review-q">${i+1}. ${chem(r.q || r.text || "")}</div>
         ${r.q_hi ? `<div class="hi muted" style="margin-bottom:6px">${esc(r.q_hi)}</div>` : ""}
         ${opts.map((op, idx) => {
           const isCorrect = idx === correctIdx;
@@ -1039,12 +1058,29 @@ function renderResult(root){
           let suffix = "";
           if (isCorrect) { cls = "correct"; suffix = " ✓ Correct"; }
           else if (isChosen && !isCorrect) { cls = "your"; suffix = " ✗ Your answer"; }
-          return `<div class="review-opt ${cls}">${String.fromCharCode(65+idx)}. ${esc(op)}${suffix}</div>`;
+          return `<div class="review-opt ${cls}">${String.fromCharCode(65+idx)}. ${chem(op)}${suffix}</div>`;
         }).join("")}
         ${chosenIdx === -1 ? `<div class="review-opt" style="color:var(--amber);margin-top:6px">⚠ Not attempted</div>` : ""}
+        ${r.explanation ? `<div class="review-expl" data-testid="review-explanation"><b>💡 Explanation</b><div>${chem(r.explanation).replace(/\n/g,"<br/>")}</div></div>` : ""}
       </div>`;
     }).join("");
   };
+  if (state.result.past) root.querySelector("#reviewBtn").click(); // opened from the Tests list: show the questions straight away
+}
+
+/* Open the saved review of a test this student already attempted. */
+async function openPastReview(testId, btn){
+  const old = btn ? btn.textContent : "";
+  if (btn) { btn.disabled = true; btn.textContent = "Loading…"; }
+  try {
+    const res = await api("getReview", { testId });
+    state.result = { result: res.result, test: res.test, timeSec: res.timeSec, past: true };
+    render();
+    window.scrollTo(0, 0);
+  } catch (e) {
+    toast(e.message, "error");
+    if (btn) { btn.disabled = false; btn.textContent = old; }
+  }
 }
 
 /* --- DOUBTS --- */
@@ -1420,7 +1456,7 @@ async function adminTests(root){
           </div>
           <div id="qBuilderWrap"></div>
           <div id="jsonModeWrap" class="hidden">
-            <textarea class="textarea" id="jsonPasteArea" style="min-height:160px;font-size:.78rem" placeholder='Paste JSON array: [{"q":"...","options":["A","B","C","D"],"answer":0}]'></textarea>
+            <textarea class="textarea" id="jsonPasteArea" style="min-height:160px;font-size:.78rem" placeholder='Paste JSON array: [{"q":"...","options":["A","B","C","D"],"answer":0,"explanation":"..."}]'></textarea>
             <button type="button" class="btn btn-ghost btn-sm" id="parseJsonBtn" style="margin-top:6px">⟳ Parse & Load into Builder</button>
           </div>
           <div style="margin-top:8px">
@@ -1474,6 +1510,9 @@ async function adminTests(root){
                 <input type="radio" class="correct-radio" name="correct_${qi}" value="${oi}" ${Number(bq.answer)===oi?"checked":""} data-qi="${qi}" title="Mark as correct"/>
                 ${Number(bq.answer)===oi?`<span class="qb-correct-label">✓ Correct</span>`:""}
               </div>`).join("")}
+            <div class="field" style="margin-top:8px"><label class="label" style="font-size:.7rem">Explanation (English — shown to students after they submit)</label>
+              <textarea class="textarea" style="min-height:70px" placeholder="Why is this the correct answer? Formulas like H2O show as H₂O automatically." data-qi="${qi}" data-field="explanation">${esc(bq.explanation||"")}</textarea>
+            </div>
           </div>`;
         wrap.appendChild(block);
       });
@@ -1484,7 +1523,7 @@ async function adminTests(root){
       addBtn.className = "qb-add-q";
       addBtn.textContent = "+ Add Question";
       addBtn.onclick = () => {
-        builderQs.push({ q: "", q_hi: "", options: ["","","",""], answer: 0 });
+        builderQs.push({ q: "", q_hi: "", options: ["","","",""], answer: 0, explanation: "" });
         renderBuilder();
       };
       wrap.appendChild(addBtn);
@@ -1521,6 +1560,9 @@ async function adminTests(root){
       wrap.querySelectorAll("input[data-field='q_hi']").forEach(inp => inp.oninput = () => {
         builderQs[Number(inp.dataset.qi)].q_hi = inp.value; updatePreview();
       });
+      wrap.querySelectorAll("textarea[data-field='explanation']").forEach(inp => inp.oninput = () => {
+        builderQs[Number(inp.dataset.qi)].explanation = inp.value; updatePreview();
+      });
       wrap.querySelectorAll("input[data-field='option']").forEach(inp => inp.oninput = () => {
         builderQs[Number(inp.dataset.qi)].options[Number(inp.dataset.oi)] = inp.value; updatePreview();
       });
@@ -1554,6 +1596,7 @@ async function adminTests(root){
           q_hi: q.q_hi || "",
           options: q.options || q.choices || ["","","",""],
           options_hi: q.options_hi || [],
+          explanation: q.explanation || "",
           answer: q.answer !== undefined ? Number(q.answer) : 0
         }));
         modal.querySelector("#jsonModeWrap").classList.add("hidden");
